@@ -7,8 +7,11 @@ if __name__ == "__main__":
 
 # ========== 调试用目标文章列表（仅独立运行时生效，可设置5篇）==========
 DEBUG_TARGETS = [
-    "在黑客松上，开发者们下注鸿蒙",
-    "越来越多的人，已经把小红书玩成了 AI 孵化器",
+    "测试文章标题一",
+    "测试文章标题二",
+    "测试文章标题三",
+    "测试文章标题四",
+    "测试文章标题五"
 ]
 # ========== 结束 ==========
 
@@ -45,7 +48,7 @@ from loguru import logger
 class ConfigLoader:
     """加载平台配置（YAML），提供点号路径访问方法"""
 
-    def __init__(self, platform: str = "geekpark_wechat"):
+    def __init__(self, platform: str = "wechat"):
         self.platform = platform
         try:
             self.config = self._load_config()
@@ -141,7 +144,7 @@ logger.add(
 
 # 文件输出
 logger.add(
-    str(log_dir / "geekpark_wechat_crawler_{time:YYYY-MM-DD}.log"),
+    str(log_dir / "wechat_crawler_{time:YYYY-MM-DD}.log"),
     rotation="00:00",
     retention="7 days",
     compression="zip",
@@ -155,7 +158,7 @@ logger.add(
 # 平台配置初始化
 # ============================================================
 
-PLATFORM_NAME = "geekpark_wechat"
+PLATFORM_NAME = "wechat"
 config = ConfigLoader(PLATFORM_NAME)
 
 # 从环境变量加载账号密码（扫码登录时可能为空值）
@@ -1785,7 +1788,7 @@ async def crawl(
             logger.error(f"{PLATFORM_NAME} 登录失败")
             # 通知登录失败，让调度器加入手动登录队列
             if login_failed_callback:
-                login_failed_callback("geekpark_wechat")
+                login_failed_callback("wechat")
             return [], targets
 
         # 导航到文章列表
@@ -1938,7 +1941,7 @@ async def main():
 # 平台注册
 # ============================================================
 from utils.platform_registry import get_platform_registry
-get_platform_registry().register("geekpark_wechat", None, "微信公众号", is_stable=True)
+get_platform_registry().register("wechat", None, "微信公众号", is_stable=True)
 
 
 if __name__ == "__main__":

@@ -41,8 +41,7 @@ class ConfigLoader:
     # 平台标识到环境变量前缀的映射
     PLATFORM_ENV_MAP = {
         "baijiahao": "BAIJIAHAO",
-        "geekpark_web": "GEEKPARK_WEB",
-        "geekpark_wechat": "GEEKPARK_WECHAT",
+        "wechat": "WECHAT",
         "netease": "NETEASE",
         "qq": "QQ",
         "sohu": "SOHU",

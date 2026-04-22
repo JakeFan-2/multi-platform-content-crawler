@@ -10,6 +10,7 @@ if not exist "%PYINSTALLER%" (
     --name "MultiPlatformCrawler" ^
     --add-data "platforms;platforms" ^
     --add-data "config;config" ^
+    --add-data ".env.example;.env.example" ^
     --hidden-import=playwright.async_api ^
     --hidden-import=asyncio ^
     --hidden-import=multiprocessing ^

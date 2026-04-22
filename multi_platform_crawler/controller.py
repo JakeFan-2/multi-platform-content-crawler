@@ -89,12 +89,12 @@ def _xueqiu_resolve_user_title(crawled: str, search_to_original: Dict[str, str])
     return crawled
 
 
-def _geekpark_wechat_resolve_user_title(
+def _wechat_resolve_user_title(
     crawled: str, search_to_original: Dict[str, str]
 ) -> str:
     """
     微信公众号：列表页标题与用户检索词的匹配规则为 clean(检索词) in clean(页面标题)，
-    与 collectors/geekpark_wechat 及 title_matcher 一致；据此将 title 还原为用户给定原标题。
+    与 collectors/wechat 及 title_matcher 一致；据此将 title 还原为用户给定原标题。
     """
     if not search_to_original:
         return crawled
@@ -502,8 +502,8 @@ class CrawlScheduler(QObject):
             )
 
         # 微信公众号：采集层 title 多为页面文案，与方案「title=用户给定」一致，按与采集器相同的清洗匹配还原
-        if platform_id == "geekpark_wechat" and title_restore_map:
-            normalized["title"] = _geekpark_wechat_resolve_user_title(
+        if platform_id == "wechat" and title_restore_map:
+            normalized["title"] = _wechat_resolve_user_title(
                 str(normalized.get("title", "/")), title_restore_map
             )
 
@@ -619,8 +619,8 @@ class CrawlScheduler(QObject):
                     if original_title:
                         data["title"] = original_title
                         logger.debug(f"标题已还原: '{crawled_title[:20]}...' -> '{original_title[:20]}...'")
-                    elif platform == "geekpark_wechat":
-                        data["title"] = _geekpark_wechat_resolve_user_title(
+                    elif platform == "wechat":
+                        data["title"] = _wechat_resolve_user_title(
                             str(crawled_title or ""), search_to_original
                         )
 
@@ -781,8 +781,8 @@ class CrawlScheduler(QObject):
                         logger.debug(
                             f"标题已还原: '{str(crawled_title)[:20]}...' -> '{str(original_title)[:20]}...'"
                         )
-                    elif platform == "geekpark_wechat":
-                        data["title"] = _geekpark_wechat_resolve_user_title(
+                    elif platform == "wechat":
+                        data["title"] = _wechat_resolve_user_title(
                             str(crawled_title or ""), search_to_original
                         )
 
@@ -821,8 +821,6 @@ class CrawlScheduler(QObject):
         """
         # 兜底规则：目标平台 -> 优先级平台列表
         fallback_rules = {
-            "geekpark_xueqiu": ["geekpark_zhihu", "geekpark_weibo", "geekpark_toutiao"],
-            "geekpark_wechat": ["geekpark_website", "geekpark_qiehao", "geekpark_baijia", "geekpark_wangyi"],
         }
 
         # 构建标题索引：{标准化标题: {platform: article}}

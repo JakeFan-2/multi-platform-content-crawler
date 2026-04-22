@@ -4,8 +4,7 @@
 # 
 # 重要：平台标识必须与 PLATFORM_COLLECTOR_MAP 中的键一致
 # 映射关系：
-#   geekpark_wechat -> geekpark_wechat (微信公众号)
-#   geekpark_web -> geekpark_web (极客公园官网)
+#   wechat -> wechat (微信公众号)
 #   weibo -> weibo (微博)
 #   toutiao -> toutiao (头条号)
 #   zhihu -> zhihu (知乎)
@@ -16,35 +15,32 @@
 #   xueqiu -> xueqiu (雪球)
 #   zaker -> zaker (ZAKER)
 
-# 极客公园微信公众号
-geekpark_wechat: 870000
+# 微信公众号
+wechat: 微信公众号粉丝数
 
-# 极客公园官网
-geekpark_web: null
+# 微博
+weibo: 微博粉丝数
 
-# 极客公园微博
-weibo: 1490000
+# 头条号
+toutiao: 头条号粉丝数
 
-# 极客公园头条号
-toutiao: 435000
+# 知乎
+zhihu: 知乎粉丝数
 
-# 极客公园知乎号
-zhihu: 200000
+# 百家号
+baijiahao: 百家号粉丝数   
 
-# 极客公园百家号
-baijiahao: 200000
+# 网易号
+netease: 网易号粉丝数
 
-# 极客公园网易号
-netease: 80000
+# 企鹅号
+qq: 企鹅号粉丝数
 
-# 极客公园企鹅号
-qq: 180000
-
-# 极客公园一点资讯号
+# 一点资讯号
 yidian: 23000
 
-# 极客公园雪球号
+# 雪球号
 xueqiu: 26000
 
-# 极客公园ZAKER号
+# ZAKER号
 zaker: 440000

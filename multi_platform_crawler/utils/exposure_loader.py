@@ -92,7 +92,7 @@ class ExposureLoader:
         获取指定平台的曝光量
         
         Args:
-            platform_id: 平台标识符（如 "geekpark_wechat"）
+            platform_id: 平台标识符（如 "wechat"）
         
         Returns:
             str: 曝光量数字字符串（如 "870000"）；
@@ -100,9 +100,11 @@ class ExposureLoader:
         
         Example:
             >>> loader = ExposureLoader()
-            >>> loader.get_exposure("geekpark_wechat")
+            >>> loader.get_exposure("wechat")
             '870000'
-            >>> loader.get_exposure("geekpark_website")
+            >>> loader.get_exposure("zaker")
+            '440000'
+            >>> loader.get_exposure("non_existent")
             '/'
         """
         if not platform_id:

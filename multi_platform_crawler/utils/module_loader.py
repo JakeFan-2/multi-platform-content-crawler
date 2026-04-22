@@ -16,7 +16,7 @@ from utils.path_helper import COLLECTORS_DIR
 
 
 def _collector_class_name(platform_name: str) -> str:
-    """toutiao -> ToutiaoCollector；geekpark_wechat -> GeekparkWechatCollector"""
+    """toutiao -> ToutiaoCollector；wechat -> WechatCollector"""
     parts = platform_name.split("_")
     return "".join(p.capitalize() for p in parts) + "Collector"
 

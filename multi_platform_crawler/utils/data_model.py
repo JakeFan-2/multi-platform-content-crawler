@@ -44,19 +44,17 @@ FIELD_NAME_MAP = {
     "collect": "收藏量"
 }
 
-# 平台标识到中文名映射（极客公园各平台账号）
+# 平台标识到中文名映射
 PLATFORM_NAME_MAP = {
-    "geekpark_wechat": "极客公园微信",
-    "geekpark_web": "极客公园官网",
-    "weibo": "极客公园微博",
-    "toutiao": "极客公园头条号",
-    "zhihu": "极客公园知乎号",
-    "baijiahao": "极客公园百家号",
-    "netease": "极客公园网易号",
-    "qq": "极客公园企鹅号",
-    "yidian": "极客公园一点资讯号",
-    "xueqiu": "极客公园雪球号",
-    "zaker": "极客公园ZAKER号",
+    "weibo": "微博",
+    "toutiao": "头条号",
+    "zhihu": "知乎号",
+    "baijiahao": "百家号",
+    "netease": "网易号",
+    "qq": "企鹅号",
+    "yidian": "一点资讯号",
+    "xueqiu": "雪球号",
+    "zaker": "ZAKER号",
 }
 
 

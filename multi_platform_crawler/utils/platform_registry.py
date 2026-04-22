@@ -34,18 +34,17 @@ class PlatformRegistry:
     
     # 稳定平台白名单（GUI仅渲染该列表内平台）
     STABLE_PLATFORMS = [
-        "zaker",             # ZAKER
-        "yidian",           # 一点资讯
-        "weibo",            # 微博
-        "baijiahao",        # 百家号
-        "zhihu",            # 知乎
-        "toutiao",          # 头条号
-        "geekpark_web",     # 极客公园官网
-        "netease",          # 网易号
-        "xueqiu",           # 雪球（新增）
-        "qq",               # 企鹅号（新增）
-        "geekpark_wechat",  # 微信公众号（新增）
-    ]
+    "zaker",             # ZAKER
+    "yidian",           # 一点资讯
+    "weibo",            # 微博
+    "baijiahao",        # 百家号
+    "zhihu",            # 知乎
+    "toutiao",          # 头条号
+    "netease",          # 网易号
+    "xueqiu",           # 雪球（新增）
+    "qq",               # 企鹅号（新增）
+    "wechat",           # 微信公众号（新增）
+]
     
     # 未稳定平台占位（仅预留扩展位，不启用）
     UNSTABLE_PLATFORMS = [
@@ -85,19 +84,18 @@ class PlatformRegistry:
     def _get_default_display_name(self, platform_id: str) -> str:
         """获取默认显示名称"""
         default_names = {
-            "zaker": "ZAKER",
-            "yidian": "一点资讯",
-            "weibo": "微博",
-            "baijiahao": "百家号",
-            "zhihu": "知乎",
-            "toutiao": "头条号",
-            "geekpark_web": "极客公园官网",
-            "netease": "网易号",
-            "xueqiu": "雪球",
-            "sohu": "搜狐",
-            "qq": "QQ公众号",
-            "geekpark_wechat": "极客公园微信",
-        }
+        "zaker": "ZAKER",
+        "yidian": "一点资讯",
+        "weibo": "微博",
+        "baijiahao": "百家号",
+        "zhihu": "知乎",
+        "toutiao": "头条号",
+        "netease": "网易号",
+        "xueqiu": "雪球",
+        "sohu": "搜狐",
+        "qq": "QQ公众号",
+        "wechat": "微信公众号",
+    }
         return default_names.get(platform_id, platform_id)
     
     # ==================== 注册接口 ====================

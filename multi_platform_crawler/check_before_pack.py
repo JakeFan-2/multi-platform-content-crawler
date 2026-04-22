@@ -26,8 +26,7 @@ ensure_sys_path_for_imports(ROOT)
 
 DEFAULT_EXPOSURE = """# 多平台内容采集系统 - 曝光量静态配置（打包前检查生成的默认模板，请按实际调整）
 # 平台标识: 数值（null 表示无数据）
-geekpark_wechat: null
-geekpark_web: null
+wechat: null
 weibo: null
 toutiao: null
 zhihu: null

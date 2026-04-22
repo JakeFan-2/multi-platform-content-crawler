@@ -142,7 +142,7 @@ class PlatformOrderManager:
         self.platforms = [
             "toutiao", "weibo", "zhihu", "xueqiu",
             "yidian", "zaker", "qq",
-            "netease", "baijiahao", "geekpark_web", "geekpark_wechat"
+            "netease", "baijiahao"
         ]
         return self.platforms
 
@@ -230,7 +230,7 @@ class PlatformFeatureFlag:
             for platform in [
                 "toutiao", "weibo", "zhihu", "xueqiu",
                 "yidian", "zaker", "qq",
-                "netease", "baijiahao", "geekpark_web", "geekpark_wechat"
+                "netease", "baijiahao"
             ]
         }
         return self.flags

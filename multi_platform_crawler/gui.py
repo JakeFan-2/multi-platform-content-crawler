@@ -22,24 +22,22 @@ from PySide6.QtGui import QColor, QFont
 
 # 最终补采模块：置顶三项（问题较多平台优先展示）；其余平台在注册表顺序中列出
 _PINNED_MANUAL_COLLECT = (
-    ("geekpark_wechat", "微信公众号"),
+    ("wechat", "微信公众号"),
     ("qq", "企鹅号"),
     ("xueqiu", "雪球号"),
 )
 
-# 平台信息配置（极客公园各平台账号）
+# 平台信息配置
 PLATFORMS_INFO = {
-    "geekpark_wechat": "极客公园微信",
-    "geekpark_web": "极客公园官网",
-    "weibo": "极客公园微博",
-    "toutiao": "极客公园头条号",
-    "zhihu": "极客公园知乎号",
-    "baijiahao": "极客公园百家号",
-    "netease": "极客公园网易号",
-    "qq": "极客公园企鹅号",
-    "yidian": "极客公园一点资讯号",
-    "xueqiu": "极客公园雪球号",
-    "zaker": "极客公园ZAKER号",
+    "weibo": "微博",
+    "toutiao": "头条号",
+    "zhihu": "知乎号",
+    "baijiahao": "百家号",
+    "netease": "网易号",
+    "qq": "企鹅号",
+    "yidian": "一点资讯号",
+    "xueqiu": "雪球号",
+    "zaker": "ZAKER号",
 }
 
 # 标准字段（按COLLECTOR_STRATEGY.md标准顺序）
@@ -1197,7 +1195,7 @@ class MainWindow(QWidget):
                 "QQ号"
                 if platform == "qq"
                 else "微信号"
-                if platform == "geekpark_wechat"
+                if platform == "wechat"
                 else platform_name
             )
             self.unmatched_list.addItem(f"{list_label}: {title}")
