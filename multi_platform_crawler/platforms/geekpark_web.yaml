@@ -1,0 +1,161 @@
+# ============================================================
+# 极客公园官网采集器配置
+# ============================================================
+# 平台：geekpark_web（极客公园官网）
+# 创建时间：2026-03-24
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+platform: "geekpark_web"
+
+# -------------------- URLs --------------------
+# 数据后台URL（文章列表页）
+main_url: "https://admin.geekpark.net/posts"
+# 登录页面URL
+login_url: "https://account.geekpark.net/"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取账号密码
+username: "{{env:GEEKPARK_WEB_USERNAME}}"
+password: "{{env:GEEKPARK_WEB_PASSWORD}}"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- 超时配置 (毫秒) --------------------
+default_timeout: 30000
+element_timeout: 10000
+element_short_timeout: 5000
+element_fallback_timeout: 2000
+
+# -------------------- 重试配置 --------------------
+max_retries: 3
+retry_delay_min: 2000
+retry_delay_max: 4000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+  - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+# -------------------- 人类行为模拟 --------------------
+typing_delay_min: 50
+typing_delay_max: 150
+
+# -------------------- 功能开关 --------------------
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: true
+
+# -------------------- 登录选择器 --------------------
+login:
+  # 用户名输入框选择器（按优先级排序）
+  username_selectors:
+    - role: "textbox"
+      name: "手机号码/邮箱"
+    - css: "input[placeholder*='手机']"
+    - css: "input[placeholder*='邮箱']"
+    - css: "input[type='text']"
+
+  # 密码输入框选择器
+  password_selectors:
+    - role: "textbox"
+      name: "密码"
+    - css: "input[type='password']"
+    - css: "input[placeholder*='密码']"
+
+  # 登录按钮选择器
+  login_button_selectors:
+    - role: "button"
+      name: "立即登录"
+    - css: "button"
+    - css: ".login-btn"
+
+# -------------------- 登录态验证 --------------------
+login_check:
+  # 登录成功后URL包含的关键字
+  success_url_contains: "my#"
+  # 登录后应存在的元素选择器
+  logged_in_element:
+    - css: ".el-dropdown"
+    - css: ".user-info"
+
+# -------------------- 文章列表选择器 --------------------
+article_list:
+  # 表格容器
+  table_container: ".el-table__body-wrapper"
+
+  # 数据行选择器
+  row_selector: "tr.el-table__row"
+
+  # 字段选择器（基于列索引）
+  columns:
+    # 新闻ID（第1列）
+    id:
+      selector: ".el-table_1_column_1 .cell"
+      type: "text"
+
+    # 标题（第2列，包含链接）
+    title:
+      selector: ".el-table_1_column_2 .cell"
+      type: "text"
+
+    # 作者（第3列）
+    author:
+      selector: ".el-table_1_column_3 .cell"
+      type: "text"
+
+    # 栏目/分类（第4列）
+    category:
+      selector: ".el-table_1_column_4 .cell"
+      type: "text"
+
+    # 发布时间（第5列）
+    publish_time:
+      selector: ".el-table_1_column_5 .cell"
+      type: "text"
+
+    # 状态（第6列）
+    status:
+      selector: ".el-table_1_column_6 .cell"
+      type: "text"
+
+    # PV阅读量（第7列）
+    pv:
+      selector: ".el-table_1_column_7 .cell"
+      type: "text"
+
+# -------------------- 文章URL模式 --------------------
+# 极客公园文章URL格式：https://www.geekpark.net/news/{文章ID}
+article_url_pattern: "https://www.geekpark.net/news/{article_id}"
+
+# -------------------- 分页配置 --------------------
+pagination:
+  # 每页文章数
+  page_size: 10
+  # 最大遍历页数（10页 = 约100条数据）
+  max_pages: 10
+  # 下一页按钮选择器
+  next_button: ".el-pagination .btn-next"
+  # 页码选择器
+  page_numbers: ".el-pagination .el-pager li"
+  # 翻页等待时间（毫秒）- 确保页面加载稳定
+  page_wait_time: 2000
+  # 表格加载等待时间（毫秒）
+  table_wait_time: 1500
+
+# -------------------- 数据字段映射 --------------------
+# 平台字段 -> 标准字段
+field_mapping:
+  publish_time: "publish_time"  # 发布日期
+  title: "title"                # 标题（用户给定）
+  url: "url"                    # 发布链接
+  pv: "read_count"              # PV阅读量
+  # 以下字段该平台不需要采集，填充为"/"
+  exposure_count: "/"
+  like_count: "/"
+  comment_count: "/"
+  share_count: "/"
+  collect_count: "/"

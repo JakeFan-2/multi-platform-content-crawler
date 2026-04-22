@@ -1,0 +1,296 @@
+# ============================================================
+# 网易号采集器配置
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+# 平台标识符（与文件名一致）
+platform: "netease"
+
+# -------------------- URLs --------------------
+# 主页面URL（内容后台首页）
+main_url: "https://mp.163.com/subscribe_v4/index.html#/"
+
+# 登录入口URL（会自动跳转到登录页）
+login_url: "https://mp.163.com/subscribe_v4/index.html#/"
+
+# 内容管理页面URL（登录成功后跳转的目标页面）
+content_manage_url: "https://mp.163.com/subscribe_v4/index.html#/content-manage"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取：NETEASE_USERNAME / NETEASE_PASSWORD
+username: "{{env:NETEASE_USERNAME}}"
+password: "{{env:NETEASE_PASSWORD}}"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- 超时配置 (毫秒) --------------------
+# 页面默认超时
+default_timeout: 30000
+# 元素等待超时
+element_timeout: 8000
+# 短超时（用于快速检查）
+element_short_timeout: 5000
+# 兜底超时
+element_fallback_timeout: 1000
+
+# -------------------- 重试配置 --------------------
+# 最大重试次数
+max_retries: 2
+# 重试延迟范围（毫秒）
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# -------------------- 人类行为模拟 --------------------
+# 输入延迟（毫秒）
+typing_delay_min: 50
+typing_delay_min: 150
+
+# -------------------- 功能开关 --------------------
+# 是否启用反检测
+enable_stealth: true
+# 是否随机User-Agent
+enable_user_agent_random: true
+# 是否启用人类模拟输入
+enable_human_typing: true
+
+# -------------------- 登录选择器 --------------------
+login:
+  # 登录态验证元素（首页右上角用户信息）
+  logged_in_element:
+    - text: "极客公园"
+    - css: ".user-info"
+
+  # 登录按钮选择器（首页）
+  login_button_selectors:
+    - text: "登录 / 注册"
+    - css: ".user-login"
+    - role: "link"
+      name: "登录 / 注册"
+
+  # 登录iframe选择器（网易号登录在iframe中，使用动态id前缀匹配）
+  iframe_selectors:
+    - css: "iframe[id^='x-URS-iframe']"
+    - css: "iframe"
+
+  # 邮箱登录选项卡
+  email_login_tab_selectors:
+    - text: "邮箱登录"
+    - css: ".login-tabs .tab:has-text('邮箱')"
+
+  # 邮箱号输入框选择器（按优先级排序）
+  username_selectors:
+    - role: "textbox"
+      name: "网易邮箱号"
+    - css: "input[placeholder='网易邮箱号']"
+
+  # 密码输入框选择器
+  password_selectors:
+    - role: "textbox"
+      name: "密码"
+    - css: "input[type='password'][placeholder='密码']"
+
+  # 十天内免登录复选框（可选）
+  remember_me_checkbox:
+    - role: "checkbox"
+      name: "十天内免登录"
+    - text: "十天内免登录"
+
+  # 登录提交按钮选择器
+  login_submit_button_selectors:
+    - role: "link"
+      name: "登录 / 注册"
+    - text: "登录 / 注册"
+    - css: ".login-btn"
+
+  # 登录成功判定：检测登录iframe是否消失
+  login_success_check:
+    - iframe_disappear: true
+    - wait_time_after_login: 20  # 登录成功后等待20秒再跳转
+
+# -------------------- 导航选择器 --------------------
+navigation:
+  # 内容管理页面URL
+  content_manage_url: "https://mp.163.com/subscribe_v4/index.html#/content-manage"
+
+  # 内容管理菜单选择器
+  content_manage_menu_selectors:
+    - text: "内容管理"
+    - css: "a[href*='/content-manage']"
+    - role: "link"
+      name: "内容管理"
+
+  # 图文标签选择器（MCP分析：tab "图文"）
+  tuwen_tab_selectors:
+    - role: "tab"
+      name: "图文"
+    - text: "图文"
+
+  # 全部标签选择器
+  all_tab_selectors:
+    - role: "tab"
+      name: "全部"
+    - text: "全部"
+
+  # 内容验证选择器
+  content_validate_selectors:
+    - text: "条内容"
+
+  # 数据加载等待时间（秒）
+  data_load_wait_time: 2
+
+# -------------------- 文章列表选择器 --------------------
+article_list:
+  # 文章容器选择器（MCP分析：包含文章行的generic容器）
+  container_selectors:
+    - css: "generic"
+      has: "已发布"
+
+  # 文章行选择器（MCP分析：每篇文章是一个generic元素，包含标题、时间、数据等）
+  row_selectors:
+    - css: "generic"
+      has: "原创"
+
+  # 标题链接选择器（MCP分析：链接元素）
+  title_selectors:
+    - css: "a[href*='163.com/dy/article']"
+    - css: "a[href*='//www.163.com']"
+    - css: "a[href*='163.com']"
+
+  # 创建时间文本匹配
+  created_time_text: "创建于"
+
+  # 数据加载等待时间（秒）
+  data_load_wait_time: 2
+
+  # 选择器超时时间（毫秒）
+  selector_timeout: 8000
+
+# -------------------- 平台字段映射 --------------------
+# 网易号所需采集字段映射到标准字段（根据COLLECTOR_STRATEGY.md L364-376）
+platform_field_mapping:
+  # 平台字段: 标准字段
+  title: "title"              # 文章标题（用户给定，用于匹配）
+  publish_time: "publish_time"   # 发布时间
+  url: "url"                 # 文章URL（直接从link元素获取）
+  exposure: "exposure"       # 展现数
+  read: "read"               # 观看数
+  comment: "comment"         # 跟帖互动
+  like: "like"                # 点赞/顶
+
+# -------------------- 不需要采集的字段 --------------------
+# 这些字段在网易号中不存在，直接填充"/"
+skip_fields:
+  - "recommend"    # 推荐
+  - "forward"      # 分享
+  - "collect"      # 收藏
+
+# -------------------- 分页配置 --------------------
+pagination:
+  # 上一页按钮选择器
+  prev_button_selectors:
+    - role: "button"
+      name: "上一页"
+
+  # 下一页按钮选择器
+  next_button_selectors:
+    - role: "button"
+      name: "下一页"
+    - text: "下一页"
+
+  # 页码按钮基础选择器（配合页码数字使用）
+  page_button_base:
+    - role: "button"
+
+  # 直接跳转输入框选择器
+  page_input_selectors:
+    - role: "spinbutton"
+
+  # 跳转按钮选择器
+  page_jump_button_selectors:
+    - role: "button"
+      name: "跳转"
+
+  # 最大翻页数（约60篇文章，每页10篇，共6页）
+  max_pages: 6
+
+  # 翻页后等待时间（秒）
+  wait_time_after_page: 2
+
+# -------------------- 匹配与终止配置 --------------------
+matching:
+  # 单次任务目标文章数量限制
+  max_target_articles: 5
+
+  # 标题匹配规则（优先）
+  title_match_rule:
+    - exact_match: true  # 标题完全匹配
+    - case_sensitive: false  # 不区分大小写
+
+  # 关键词匹配启用条件
+  keyword_match_condition:
+    - enabled: true
+    - min_title_length: 30  # 标题字数>30字时启用关键词匹配
+    - platforms: ["toutiao", "weibo"]  # 仅头条号、微博号支持
+
+  # 待匹配列表操作规则
+  # 匹配成功后从列表中移除
+  remove_matched: true
+
+  # 采集终止条件
+  termination_conditions:
+    - matched_list_empty: true  # 待匹配列表为空（全部匹配成功）
+    - article_limit_reached: true  # 已遍历完规定范围文章
+
+  # 文章列表范围限制
+  article_range:
+    - type: "pagination"  # 翻页式
+    - max_articles: 60  # 约60篇文章
+
+# -------------------- 异常与导出配置 --------------------
+exception_export:
+  # 未匹配文章记录规则
+  unmatched_record:
+    - include_platform: true  # 标注平台标识
+    - include_unmatched_tag: true  # 添加"未匹配"标识
+
+  # 数据汇总规则
+  data_summary:
+    - unmatched_by_platform: true  # 未匹配按平台顺序汇总
+    - matched_aggregated: true  # 已匹配汇总到统一数据表
+
+  # CSV导出配置（关联CSVExporter.save_articles()方法）
+  csv_export:
+    - enabled: true
+    - filename_prefix: "netease_articles"
+    - encoding: "utf-8-sig"  # UTF-8-BOM编码
+
+# -------------------- 登录态验证 --------------------
+login_check:
+  # 登录成功后URL应包含
+  success_url_contains: "/subscribe_v4"
+
+  # 登录后应存在的元素选择器（首页）
+  logged_in_element:
+    - text: "极客公园"
+    - css: ".user-info"
+    - text: "内容管理"
+
+  # 内容管理页面成功判断元素（MCP分析：显示文章数量）
+  content_manage_page_elements:
+    - url_contains: "/content-manage"
+    - text: "条内容"  # 页面底部显示文章数量，如"20654条内容"
+
+# -------------------- 人工登录模式 --------------------
+manual_login:
+  # 人工登录总等待时间（秒）
+  total_wait_time: 300  # 5分钟
+
+  # 检测间隔（秒）
+  check_interval: 30  # 每30秒检测一次

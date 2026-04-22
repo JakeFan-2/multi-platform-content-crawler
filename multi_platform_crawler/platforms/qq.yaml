@@ -1,0 +1,99 @@
+# ============================================================
+# 企鹅号采集器配置
+# 基于Playwright MCP实际页面分析生成
+# ============================================================
+
+# 平台标识符
+platform: "qq"
+
+# URLs
+main_url: "https://om.qq.com/main"
+login_url: "https://om.qq.com/userAuth/index"
+article_list_url: "https://om.qq.com/main/management/articleManage"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取账号密码（企鹅号使用微信扫码登录，通常留空）
+username: "{{env:QQ_USERNAME}}"
+password: "{{env:QQ_PASSWORD}}"
+
+# 登录方式：微信扫码
+login_type: "wechat_qrcode"
+
+# Cookie设置
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# 超时配置 (毫秒)
+default_timeout: 30000
+element_timeout: 8000
+element_short_timeout: 5000
+element_fallback_timeout: 1000
+
+# 重试配置
+max_retries: 2
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# User-Agent
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# 人类行为模拟
+typing_delay_min: 50
+typing_delay_max: 150
+
+# 功能开关
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: true
+
+# 登录态验证
+login_check:
+  # 登录成功后URL包含的关键字
+  success_url_contains: "/main"
+  # 登录后应存在的元素选择器
+  logged_in_element:
+    - css: ".user-name"
+    - text: "极客公园"
+    - role: "link"
+      name: "我的主页"
+
+# 文章列表配置
+article_list:
+  # 内容类型标签选择器（点击"文章"）
+  content_type_tab:
+    - text: "文章"
+    - xpath: "//li[contains(text(),'文章')]"
+    - css: "li:has-text('文章')"
+
+  # 状态筛选选择器（选择"已发布"）
+  status_filter:
+    - role: "radio"
+      name: "已发布"
+    - text: "已发布"
+    - css: "input[type='radio'][value*='已发布']"
+
+  # 文章链接选择器
+  article_link_selector: "a[href*='page.om.qq.com']"
+
+  # 文章行选择器
+  row_selectors:
+    - css: "[class*='article']"
+    - css: "[class*='item']"
+
+# 滚动配置
+scroll:
+  type: "page_scroll"
+  max_articles: 60
+  scroll_delay: 2000
+  max_scroll_times: 10
+
+# 数据字段映射
+# 平台字段 -> 标准字段
+field_mapping:
+  title: "title"
+  url: "url"
+  read_count: "阅读"
+  comment_count: "评论"
+  publish_time: "publish_time"

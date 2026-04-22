@@ -1,0 +1,137 @@
+# ZAKER platform configuration
+
+# Platform identification
+platform: zaker
+
+# URLs
+main_url: "https://cms.myzaker.com/?home"
+login_url: "https://cms.myzaker.com/?login/index"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取：ZAKER_USERNAME / ZAKER_PASSWORD
+username: "{{env:ZAKER_USERNAME}}"
+password: "{{env:ZAKER_PASSWORD}}"
+
+# Cookie settings
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# Timeouts (ms)
+default_timeout: 30000
+element_timeout: 8000
+element_short_timeout: 5000
+element_fallback_timeout: 1000
+
+# Retry settings
+max_retries: 2
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# User agent settings
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# Human behavior simulation
+typing_delay_min: 50
+typing_delay_max: 150
+
+# Feature toggles
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: true
+
+# Login page selectors
+# 【优化】将最可靠的CSS选择器放在第一位，语义化选择器放最后作为兜底
+login:
+  username_selectors:
+    - css: "input[name='username']"
+    - css: "input.input-text[type='text']"
+    - id: "username"
+    - role: "textbox"
+      name: "请输入账号"
+
+  password_selectors:
+    - css: "input[name='password']"
+    - css: "input.input-text[type='password']"
+    - id: "password"
+    - role: "textbox"
+      name: "请输入密码"
+
+  login_button_selectors:
+    - css: "input.input-button[type='button'][value='登录']"
+    - css: "input[type='button'][value='登录']"
+    - xpath: "//input[@type='button' and @value='登录']"
+    - id: "login-btn"
+    - role: "button"
+      name: "登录"
+
+# Navigation selectors
+navigation:
+  content_management_selectors:
+    - id: "menu_10"
+    - role: "link"
+      name: "内容管理"
+    - css: "a.menu_icon:has-text('内容管理')"
+
+  geek_park_selectors:
+    - css: "ul#menu_10_sub a:has-text('极客公园')"
+    - role: "link"
+      name: "极客公园"
+    - xpath: "//ul[contains(@class,'menu_sub')]//a[text()='极客公园']"
+
+# Article list selectors
+article_list:
+  iframe_selectors:
+    - id: "layout_center"
+    - css: "iframe[src*='cpeditor/article/index']"
+
+  table_selectors:
+    - css: ".datagrid-btable"
+
+  row_selectors:
+    - css: "tr[id^='datagrid-row-r1']"
+    - css: "tr.datagrid-row"
+
+  field_selectors:
+    title: "td[field='title']"
+    publish_date: "td[field='addtime']"
+    read_count: "td[field='beautify_pv']"
+    action: "td[field='action'] a:has-text('查看')"
+
+# Article URL pattern
+article_url_pattern: "https://app.myzaker.com/article/{article_id}"
+
+# ============================================================
+# 登录态验证配置
+# ============================================================
+login_check:
+  # 登录成功后URL包含的特征
+  success_url_contains: "?home"
+  # 登录后可见元素（用于验证登录状态）
+  logged_in_element:
+    - role: "link"
+      name: "内容管理"
+
+# ============================================================
+# 分页配置
+# ============================================================
+pagination:
+  next_button_selectors:
+    - css: "a.l-btn:has-text('下一页')"
+    - xpath: "//a[contains(text(),'下一页')]"
+  max_pages: 3  # 最多翻3页（约60篇）
+
+# ============================================================
+# 字段支持说明
+# ============================================================
+# ZAKER平台支持的字段:
+#   - title: 文章标题 ✅
+#   - url: 文章链接 ✅
+#   - publish_time: 发布时间 ✅（选择器使用 td[field="addtime"]）
+#   - read_count: 阅读量 ✅
+#
+# ZAKER平台不支持的字段（CSV导出时填充为'/'）:
+#   - like_count: 点赞量 ❌
+#   - comment_count: 评论量 ❌
+#   - share_count: 分享量 ❌

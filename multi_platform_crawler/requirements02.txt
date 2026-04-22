@@ -1,0 +1,47 @@
+# 多平台内容采集系统 依赖
+# 安装命令: pip install -r requirements.txt
+# Playwright浏览器: playwright install chromium
+
+# ==================== 核心依赖 ====================
+
+# GUI框架
+PySide6>=6.5.0
+
+# 异步自动化框架
+playwright>=1.40.0
+playwright-stealth>=1.0.6
+
+# 配置管理
+PyYAML>=6.0
+pydantic>=2.0.0
+
+# 安全存储
+python-dotenv>=1.0.0
+cryptography>=41.0.0
+
+# 日志
+loguru>=0.7.0
+
+# 重试机制
+tenacity>=8.2.0
+
+# 异步HTTP客户端（飞书API）
+aiohttp>=3.8.0
+
+# ==================== 辅助依赖 ====================
+
+# 日期处理
+python-dateutil>=2.8.0
+
+# 图片处理 (可选，用于截图功能)
+Pillow>=10.0.0
+
+# ==================== 开发依赖 ====================
+
+# 代码检查 (可选)
+# ruff>=0.1.0
+
+# ==================== 打包（可选）====================
+# 生成 exe: 安装后运行 build_exe.bat（推荐在 .venv 中安装）
+# pip install pyinstaller
+# PyInstaller>=6.0

@@ -1,0 +1,186 @@
+# ============================================================
+# 头条号采集器配置
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+platform: "toutiao"
+
+# -------------------- URLs --------------------
+# 主页面URL（登录后的文章列表页面）
+main_url: "https://mp.toutiao.com/profile_v4/graphic/articles"
+
+# 登录页面URL
+login_url: "https://sso.toutiao.com/login/?service=https://mp.toutiao.com/mp/agw/media/v2/sso_confirm?redirect_url=JTJGcHJvZmlsZV92NCUyRg=="
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取：TOUTIAO_USERNAME / TOUTIAO_PASSWORD
+username: "{{env:TOUTIAO_USERNAME}}"
+password: "{{env:TOUTIAO_PASSWORD}}"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- 超时配置 (毫秒) --------------------
+default_timeout: 30000
+element_timeout: 10000
+element_short_timeout: 5000
+element_fallback_timeout: 1000
+
+# -------------------- 重试配置 --------------------
+max_retries: 2
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# -------------------- 人类行为模拟 --------------------
+typing_delay_min: 80
+typing_delay_max: 180
+
+# -------------------- 功能开关 --------------------
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: true
+
+# -------------------- 登录选择器 --------------------
+# 头条号支持多种登录方式，这里配置账密登录和手机登录两种选择器
+login:
+  # 切换到账密登录的按钮
+  switch_to_password_selectors:
+    - role: "button"
+      name: "帐密登录"
+
+  # 手机号/邮箱输入框（账密登录模式）
+  username_selectors:
+    - role: "textbox"
+      name: "请输入手机号或邮箱"
+    - css: "input[placeholder='手机号/邮箱']"
+    - xpath: "//input[@placeholder='手机号/邮箱']"
+
+  # 密码输入框（账密登录模式）
+  password_selectors:
+    - role: "textbox"
+      name: "请输入密码"
+    - css: "input[placeholder='密码']"
+    - xpath: "//input[@placeholder='密码']"
+
+  # 手机登录 - 手机号输入框
+  phone_selectors:
+    - role: "textbox"
+      name: "请输入手机号"
+    - css: "input[placeholder='手机号']"
+    - xpath: "//input[@placeholder='手机号']"
+
+  # 手机登录 - 验证码输入框
+  code_selectors:
+    - role: "textbox"
+      name: "请输入验证码"
+    - css: "input[placeholder='验证码']"
+    - xpath: "//input[@placeholder='验证码']"
+
+  # 获取验证码按钮
+  get_code_selectors:
+    - role: "button"
+      name: "获取验证码"
+
+  # 登录按钮
+  login_button_selectors:
+    - role: "button"
+      name: "登录"
+      exact: true
+    - css: "button:has-text('登录')"
+    - xpath: "//button[contains(text(),'登录')]"
+
+  # 协议复选框
+  agreement_checkbox_selectors:
+    - role: "checkbox"
+      name: "协议勾选框"
+    - css: "input[type='checkbox']"
+
+# -------------------- 登录态验证 --------------------
+# 验证登录成功的元素（登录后页面独有的元素）
+verify_logged_in_selectors:
+  - css: ".user-name"
+  - css: "[class*='userInfo']"
+  - xpath: "//a[contains(@href, 'profile')]"
+  - role: "link"
+    name: "退出"
+
+# -------------------- 文章列表选择器 --------------------
+article_list:
+  # iframe选择器（如需要）
+  iframe_selectors: []
+
+  # 列表容器选择器
+  list_container_selectors:
+    - css: "main"
+    - css: "[class*='article-list']"
+
+  # 文章行选择器（包含标题、时间和数据的容器）
+  # 头条号实际页面结构：.article-card-wrap
+  row_selectors:
+    - css: ".article-card-wrap"
+    - css: "[class*='article-card-wrap']"
+    - css: ".article-card"
+    - xpath: "//div[contains(@class, 'article-card-wrap')]"
+
+  # 数据字段选择器（基于Playwright实际页面分析）
+  # 文章标题 - a.title
+  title: "a.title"
+  title_xpath: "//a[@class='title']"
+
+  # 文章链接 - a.title的href属性
+  url: "a.title"
+  url_xpath: "//a[@class='title']"
+
+  # 发布时间 - span.label.create-time
+  publish_time: "span.label.create-time"
+  publish_time_xpath: "//span[contains(@class, 'create-time')]"
+
+  # 数据统计（ul.count > li）
+  # 展现量
+  exposure: "ul.count li:has-text('展现')"
+  exposure_xpath: "//ul[contains(@class, 'count')]/li[contains(text(), '展现')]"
+
+  # 阅读量
+  read_count: "ul.count li:has-text('阅读')"
+  read_count_xpath: "//ul[contains(@class, 'count')]/li[contains(text(), '阅读')]"
+
+  # 点赞量
+  like_count: "ul.count li:has-text('点赞')"
+  like_count_xpath: "//ul[contains(@class, 'count')]/li[contains(text(), '点赞')]"
+
+  # 评论量
+  comment_count: "ul.count li:has-text('评论')"
+  comment_count_xpath: "//ul[contains(@class, 'count')]/li[contains(text(), '评论')]"
+
+  # 备用数据提取方式
+  fallback_parse: true
+
+  # 采集范围：与方案 3.1 一致，由 article_list.pagination.max_pages 控制翻页上限（约 60 篇）
+  pagination:
+    max_pages: 6
+
+# -------------------- 分页配置 --------------------
+pagination:
+  # 分页类型: button(按钮点击), url(URL变化), scroll(滚动加载)
+  type: "button"
+
+  # 翻页按钮选择器（数字分页，text为纯数字的li元素）
+  next_page_selectors:
+    - xpath: "//li[text()='2']"  # 第2页
+    - xpath: "//li[text()='3']"  # 第3页
+    - xpath: "//li[text()='4']"  # 第4页
+    - xpath: "//li[text()='5']"  # 第5页
+    - xpath: "//li[text()='6']"  # 第6页
+
+  # 每页文章数（实际每页显示10篇）
+  articles_per_page: 10
+
+# -------------------- 数据采集限制 --------------------
+# 用户要求翻6页，每页10篇，共60篇文章（但实际只匹配目标文章）
+max_articles: 60

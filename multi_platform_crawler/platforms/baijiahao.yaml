@@ -1,0 +1,197 @@
+# ============================================================
+# 百家号采集器配置
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+platform: "geekpark_baijiahao"
+
+# -------------------- URLs --------------------
+# 主页面URL（登录后的首页）
+main_url: "https://baijiahao.baidu.com/"
+
+# 登录页面URL
+login_url: "https://baijiahao.baidu.com/builder/theme/bjh/login"
+
+# 数据后台URL - 文章数据页面
+data_page_url: "https://baijiahao.baidu.com/builder/rc/content"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取账号密码
+username: "{{env:BAIJIAHAO_USERNAME}}"
+password: "{{env:BAIJIAHAO_PASSWORD}}"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- 超时配置 (毫秒) --------------------
+default_timeout: 30000
+element_timeout: 10000
+element_short_timeout: 5000
+element_fallback_timeout: 1000
+
+# -------------------- 重试配置 --------------------
+max_retries: 2
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# -------------------- 人类行为模拟 --------------------
+typing_delay_min: 80
+typing_delay_max: 180
+
+# -------------------- 功能开关 --------------------
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: true
+
+# -------------------- 登录选择器 --------------------
+# 百家号使用百度账号登录系统
+login:
+  # 用户名输入框
+  username_selectors:
+    - id: "TANGRAM__PSP_4__userName"
+    - css: "#TANGRAM__PSP_4__userName"
+    - role: "textbox"
+      name: "手机号/用户名/邮箱"
+    - css: "input[name='userName']"
+    - css: "input.pass-text-input-userName"
+
+  # 密码输入框
+  password_selectors:
+    - id: "TANGRAM__PSP_4__password"
+    - css: "#TANGRAM__PSP_4__password"
+    - role: "textbox"
+      name: "密码"
+    - css: "input[name='password']"
+    - css: "input.pass-text-input-password"
+
+  # 登录按钮
+  login_button_selectors:
+    - id: "TANGRAM__PSP_4__submit"
+    - css: "#TANGRAM__PSP_4__submit"
+    - role: "button"
+      name: "登录"
+    - css: "input[type='submit']"
+    - css: "input.pass-button-submit"
+
+  # 同意协议复选框（必须勾选才能登录）
+  agreement_checkbox_selectors:
+    - id: "TANGRAM__PSP_4__isAgree"
+    - css: "#TANGRAM__PSP_4__isAgree"
+    - role: "checkbox"
+      name: "请阅读并同意"
+    - css: "input.pass-checkbox-isAgree"
+
+  # 下次自动登录复选框
+  auto_login_checkbox_selectors:
+    - id: "TANGRAM__PSP_4__memberPass"
+    - css: "#TANGRAM__PSP_4__memberPass"
+    - role: "checkbox"
+      name: "下次自动登录"
+
+# -------------------- 登录态验证 --------------------
+# 验证登录成功的元素（登录后页面独有的元素）
+verify_logged_in_selectors:
+  - css: ".user-name"
+  - css: "[class*='userInfo']"
+  - xpath: "//a[contains(@href, 'logout')]"
+  - role: "link"
+    name: "退出"
+  - url_contains: "/builder/rc/"
+
+# -------------------- 文章列表选择器 --------------------
+article_list:
+  # iframe选择器（如需要）
+  iframe_selectors: []
+
+  # 列表容器选择器
+  list_container_selectors:
+    - css: ".article-list"
+    - css: "[class*='articleList']"
+    - css: "table"
+    - css: ".data-list"
+
+  # 文章行选择器
+  row_selectors:
+    - css: "tr"
+    - css: ".article-item"
+    - css: "[class*='item']"
+    - css: "li"
+
+  # 数据字段选择器
+  field_selectors:
+    # 文章标题
+    title: ".title a"
+    title_alt: ".article-title"
+    title_xpath: "//td[contains(@class,'title')]//a"
+
+    # 文章链接
+    url: ".title a@href"
+    url_alt: "a[href*='article']@href"
+    url_xpath: "//td[contains(@class,'title')]//a/@href"
+
+    # 阅读数
+    read_count: ".read-count"
+    read_count_alt: "[class*='read']"
+    read_count_xpath: "//td[contains(@class,'read')]"
+
+    # 点赞数
+    like_count: ".like-count"
+    like_count_alt: "[class*='like']"
+    like_count_xpath: "//td[contains(@class,'like')]"
+
+    # 评论数
+    comment_count: ".comment-count"
+    comment_count_alt: "[class*='comment']"
+    comment_count_xpath: "//td[contains(@class,'comment')]"
+
+    # 转发数（分享数）
+    share_count: ".share-count"
+    share_count_alt: "[class*='forward']"
+    share_count_alt2: "[class*='share']"
+    share_count_xpath: "//td[contains(@class,'forward')]"
+
+    # 收藏数
+    collect_count: ".collect-count"
+    collect_count_alt: "[class*='collect']"
+    collect_count_alt2: "[class*='favorite']"
+
+    # 发布时间
+    publish_time: ".publish-time"
+    publish_time_alt: "[class*='time']"
+    publish_time_xpath: "//td[contains(@class,'time')]"
+
+# -------------------- 分页配置 --------------------
+pagination:
+  # 分页类型: button(按钮点击), url(URL变化), scroll(滚动加载)
+  type: "button"
+
+  # 加载更多按钮选择器
+  load_more_selectors:
+    - role: "button"
+      name: "加载更多"
+    - css: "button:has-text('加载更多')"
+    - css: ".load-more"
+    - text: "加载更多"
+
+  # 下一页按钮选择器
+  next_page_selectors:
+    - css: "li.next a"
+    - css: "[class*='next']"
+    - role: "button"
+      name: "下一页"
+
+  # 最大页数限制
+  max_pages: 5
+
+  # 每页文章数估算（用于计算需要翻页的次数）
+  articles_per_page: 30
+
+# -------------------- 数据采集限制 --------------------
+# 根据策略文档，总则第4条：翻页式平台保证提取约60篇文章
+max_articles: 60

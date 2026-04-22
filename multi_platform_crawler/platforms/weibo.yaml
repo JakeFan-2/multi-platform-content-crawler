@@ -1,0 +1,224 @@
+# ============================================================
+# 微博平台采集器配置
+# ============================================================
+# 账号: 13691161751
+# 密码: extolDefRigel4
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+platform: "weibo"
+
+# -------------------- URLs --------------------
+# 主页面URL（登录后的首页）
+main_url: "https://weibo.com/"
+
+# 登录页面URL
+login_url: "https://passport.weibo.com/sso/signin?entry=miniblog&source=miniblog&disp=popup&url=https%3A%2F%2Fweibo.com%2Fnewlogin%3Ftabtype%3Dweibo%26gid%3D102803%26openLoginLayer%3D0%26url%3Dhttps%3A%2F%2Fweibo.com%2F&from=weibopro"
+
+# 数据后台URL（文章管理页面）
+data_page_url: "https://me.weibo.com/content/article"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取：WEIBO_USERNAME / WEIBO_PASSWORD
+username: "{{env:WEIBO_USERNAME}}"
+password: "{{env:WEIBO_PASSWORD}}"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- 超时配置 (毫秒) --------------------
+default_timeout: 30000
+element_timeout: 8000
+element_short_timeout: 5000
+element_fallback_timeout: 1000
+
+# -------------------- 重试配置 --------------------
+max_retries: 2
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# -------------------- 人类行为模拟 --------------------
+typing_delay_min: 50
+typing_delay_max: 150
+
+# -------------------- 功能开关 --------------------
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: true
+
+# -------------------- 登录选择器 --------------------
+# 注意：微博登录页面先显示二维码登录，需要先点击"账号登录"切换
+login:
+  # 切换到账号登录的链接
+  switch_to_account_link:
+    - text: "账号登录"
+
+  # 用户名输入框选择器（按优先级排序：id > css > role > xpath）
+  username_selectors:
+    - id: "loginName"
+    - css: "input[name='loginName']"
+    - css: "input[placeholder='手机号或邮箱']"
+    - role: "textbox"
+      name: "手机号或邮箱"
+
+  # 密码输入框选择器
+  password_selectors:
+    - css: "input[type='password'][name='password']"
+    - css: "input[type='password']"
+    - role: "textbox"
+      name: "密码"
+
+  # 登录按钮选择器
+  login_button_selectors:
+    - css: "a[W_btn_a][node-type='submitBtn']"
+    - css: "button[type='submit']"
+    - role: "button"
+      name: "登录"
+
+# -------------------- 登录态验证 --------------------
+# 登录成功后应存在的元素
+login_check:
+  # 登录成功后URL包含的关键字
+  success_url_contains: "weibo.com"
+  # 登录后应存在的元素选择器
+  logged_in_element:
+    - css: "a[href*='weibo.com/u/']"
+    - css: ".woo-panel-main"
+
+# -------------------- 导航选择器 --------------------
+# 导航到文章管理页面
+navigation:
+  # 数据后台URL直接访问
+  data_page_url: "https://me.weibo.com/content/article"
+
+# -------------------- 文章列表选择器 --------------------
+article_list:
+  # 列表容器选择器（多种备选方案）
+  list_container_selectors:
+    # 优先尝试常见的表格/列表容器
+    - css: "table"
+    - css: ".data-table"
+    - css: ".article-list"
+    - css: "[class*='list']"
+    - css: "div[class*='table']"
+    # 备选：主内容区域
+    - css: "main"
+    - css: ".main-content"
+    - css: ".content"
+
+  # 行选择器（文章条目）- 多种备选
+  row_selectors:
+    # 表格行
+    - css: "tr"
+    - css: "tr[class*='item']"
+    - css: "tr[data-id]"
+    # 列表项
+    - css: "li[class*='item']"
+    - css: "div[class*='item']"
+    - css: "div[class*='row']"
+
+  # 字段选择器（使用相对选择器，在行内查找）
+  field_selectors:
+    # 标题：可能是标题列、标题链接等
+    title:
+      - css: "a[href*='weibo.com']"
+      - css: "[class*='title']"
+      - css: ".title"
+      - css: "td:nth-child(1)"
+    # URL：文章链接
+    url:
+      - css: "a[href*='weibo.com/detail']"
+      - css: "a[href*='article']"
+    # 发布时间：可能是日期列、时间元素
+    publish_time:
+      - css: "[class*='date']"
+      - css: "[class*='time']"
+      - css: "td:nth-child(2)"
+      - css: ".time"
+    # 阅读数：数据指标
+    read_count:
+      - css: "[class*='read']"
+      - css: "[class*='view']"
+      - css: "td:nth-child(3)"
+      - css: ".read-count"
+    # 评论数
+    comment_count:
+      - css: "[class*='comment']"
+      - css: "td:nth-child(4)"
+      - css: ".comment-count"
+    # 点赞数
+    like_count:
+      - css: "[class*='like']"
+      - css: "[class*='fav']"
+      - css: "td:nth-child(5)"
+      - css: ".like-count"
+
+# -------------------- 分页配置 --------------------
+pagination:
+  # 分页类型：button-按钮翻页，url-URL变化，scroll-滚动加载
+  type: "button"
+  # 加载更多/下一页按钮选择器（多种备选）
+  load_more_selectors:
+    # 中文按钮文本
+    - css: "button:has-text('加载更多')"
+    - css: "a:has-text('加载更多')"
+    - css: "button:has-text('下一页')"
+    - css: "a:has-text('下一页')"
+    # 英文按钮文本
+    - css: "button:has-text('Load More')"
+    - css: "button:has-text('Next')"
+    - css: "a:has-text('Load More')"
+    - css: "a:has-text('Next')"
+    # 通用分页按钮
+    - css: ".pagination .next"
+    - css: "[class*='pagination'] [class*='next']"
+    - css: "[class*='next']"
+    # 带箭头的按钮
+    - css: "button:has(> span, > i, > svg):not([disabled])"
+    - css: "a:has(> span, > i, > svg)"
+  # 最大翻页数（保证约60篇文章）
+  max_pages: 3
+
+# -------------------- 数据字段映射 --------------------
+# 平台字段到标准字段的映射
+field_mapping:
+  # 标题：取内容区域第一行文本
+  title:
+    extract_type: "text"
+    clean_pattern: "^([^0-9]+)"
+  # 发布时间：日期格式
+  publish_time:
+    extract_type: "regex"
+    pattern: "\\d{4}-\\d{2}-\\d{2}[\\s:0-9]+"
+  # 阅读数：数据指标区域
+  read_count:
+    extract_type: "index"
+    index: 0
+  # 评论数
+  comment_count:
+    extract_type: "index"
+    index: 1
+  # 点赞数
+  like_count:
+    extract_type: "index"
+    index: 2
+
+# ============================================================
+# 字段支持说明
+# ============================================================
+# 微博平台支持的字段:
+#   - title: 文章标题 ✅
+#   - url: 文章链接 ✅
+#   - publish_time: 发布时间 ✅
+#   - read_count: 阅读量 ✅
+#   - like_count: 点赞量 ✅
+#   - comment_count: 评论量 ✅
+#
+# 微博平台不支持的字段:
+#   - share_count: 分享量 ❌ (如无此字段可填充"/")

@@ -1,0 +1,213 @@
+# ============================================================
+# 雪球采集器配置
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+platform: "xueqiu"
+
+# -------------------- URLs --------------------
+# 主页面URL
+main_url: "https://xueqiu.com/"
+
+# 登录页面URL（雪球使用微信扫码登录）
+login_url: "https://xueqiu.com/"
+
+# 数据后台URL - 作品详情页面
+data_page_url: "https://mp.xueqiu.com/dataview/works"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取：XUEQIU_USERNAME / XUEQIU_PASSWORD
+# 雪球使用微信扫码登录，账号密码留空或从环境变量读取
+username: "{{env:XUEQIU_USERNAME}}"
+password: "{{env:XUEQIU_PASSWORD}}"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- Cookie登录优先级说明 --------------------
+# 雪球号登录逻辑：
+# 1. 优先使用 Cookie 登录（从 xueqiu.json 文件加载）
+# 2. Cookie 失效时，可通过微信扫码登录重新获取
+# 3. 关键 Cookie：xq_a_token, xq_r_token, xq_id_token, s, device_id, cookiesu
+# 4. 验证登录状态：检查右上角是否显示账号名称（如"极客公园"）
+# 5. 验证未登录状态：检查右上角是否显示"未登录"
+
+
+# -------------------- 超时配置 (毫秒) --------------------
+default_timeout: 30000
+element_timeout: 10000
+element_short_timeout: 5000
+element_fallback_timeout: 1000
+
+# -------------------- 重试配置 --------------------
+max_retries: 2
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# -------------------- 人类行为模拟 --------------------
+typing_delay_min: 80
+typing_delay_max: 180
+
+# -------------------- 功能开关 --------------------
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: true
+
+# -------------------- 登录选择器 --------------------
+# 雪球支持多种登录方式：验证码登录、账密登录、微信扫码登录
+# 这里配置微信扫码登录
+login:
+  # 登录按钮选择器（点击打开登录对话框）
+  login_button_selectors:
+    - css: ".WidgetDownloadApp_pc__btn--login1_3H0"
+    - css: "[class*='login']"
+    - css: "[class*='Login']"
+    - text: "立即登录/注册"
+    - text: "登录"
+    - text: "注册"
+
+  # 切换到二维码登录的按钮
+  switch_to_qrcode_selectors:
+    - text: "二维码登录"
+
+  # 微信登录按钮（在二维码登录tab中）
+  wechat_login_selectors:
+    - text: "微信登录"
+
+  # 登录态验证元素（登录成功后页面独有的元素）
+  # 雪球创作者后台登录后会有用户头像显示
+  verify_logged_in_selectors:
+    - css: "span[class*='user-name']"
+    - css: "span[class*='header_user']"
+    - css: ".header_user-name"
+    - css: "nav div span"
+    - xpath: "//nav//div//span"
+    - xpath: "//*[@id=\"app\"]/div/div/div[1]/nav/div/div/span"
+    - text: "极客公园"
+
+# -------------------- 登录态验证 --------------------
+# 验证登录成功的元素（登录后页面独有的元素）
+# 雪球创作者后台登录成功后，右上角显示账号名称（如"极客公园"）
+# 实际元素: <span class="header_user-name_2xQ">极客公园</span>
+# CSS: #app > div > div > div:nth-child(1) > nav > div > div > span
+# XPath: //*[@id="app"]/div/div/div[1]/nav/div/div/span
+verify_logged_in_selectors:
+  - css: "span[class*='user-name']"  # class 包含 user-name 的 span
+  - css: "span[class*='header_user']"  # class 包含 header_user 的 span
+  - css: ".header_user-name"  # class 包含 header_user-name 的 span
+  - css: "nav div span"  # nav 下的 div 下的 span
+  - xpath: "//nav//div//span"  # nav 下的 div 下的 span
+  - xpath: "//*[@id=\"app\"]/div/div/div[1]/nav/div/div/span"  # 完整 xpath
+  - text: "极客公园"  # 特定账号名称（可根据实际账号修改）
+
+# -------------------- 未登录态验证 --------------------
+# 验证未登录状态的元素（Cookie失效时页面独有的元素）
+# 雪球创作者后台未登录时，右上角显示"未登录"
+verify_not_logged_in_selectors:
+  - css: "span[class*='user-name']"  # class 包含 user-name 的 span
+  - css: "nav div span"  # nav 下的 div 下的 span
+  - xpath: "//nav//div//span"  # nav 下的 div 下的 span
+  - text: "未登录"  # 未登录状态文字
+
+
+# -------------------- 文章列表选择器 --------------------
+# 雪球创作者后台 - 作品详情页面
+article_list:
+  # 列表容器选择器
+  list_container_selectors:
+    - css: "table"
+    - css: "[class*='table']"
+
+  # 文章行选择器
+  row_selectors:
+    - css: "tbody tr"
+    - css: "tr"
+
+  # 空数据状态选择器（用于判断 Cookie 失效或无文章）
+  empty_data_selectors:
+    - text: "暂无数据"
+    - css: "td:contains('暂无数据')"
+
+  # 数据字段选择器
+  field_selectors:
+    # 作品名称
+    title: "td:nth-child(1)"
+    title_alt: "td:first-child"
+    title_xpath: "//td[1]"
+
+    # 作品链接
+    url: "td:first-child a@href"
+    url_alt: "td:nth-child(1) a@href"
+    url_xpath: "//td[1]//a/@href"
+
+    # 阅读量
+    read_count: "td:nth-child(2)"
+    read_count_alt: "td:nth-child(2)"
+    read_count_xpath: "//td[2]"
+
+    # 讨论量（评论数）
+    comment_count: "td:nth-child(3)"
+    comment_count_alt: "td:nth-child(3)"
+    comment_count_xpath: "//td[3]"
+
+    # 转发量
+    share_count: "td:nth-child(4)"
+    share_count_alt: "td:nth-child(4)"
+    share_count_xpath: "//td[4]"
+
+    # 点赞量
+    like_count: "td:nth-child(5)"
+    like_count_alt: "td:nth-child(5)"
+    like_count_xpath: "//td[5]"
+
+    # 收藏量
+    collect_count: "td:nth-child(6)"
+    collect_count_alt: "td:nth-child(6)"
+    collect_count_xpath: "//td[6]"
+
+    # 个人主页访问量（第7列）
+    profile_view_count: "td:nth-child(7)"
+    profile_view_count_alt: "td:nth-child(7)"
+    profile_view_count_xpath: "//td[7]"
+
+# -------------------- 分页配置 --------------------
+pagination:
+  # 雪球使用按钮分页
+  type: "button"
+
+  # 上一页按钮
+  prev_page_selectors:
+    - css: "button[aria-label='prev page']"
+    - xpath: "//button[contains(@aria-label,'prev')]"
+
+  # 下一页按钮
+  next_page_selectors:
+    - css: "button[aria-label='next page']"
+    - xpath: "//button[contains(@aria-label,'next')]"
+
+  # 页码跳转输入框
+  page_input_selectors:
+    - css: "input[type='text']"  # 页码跳转输入框
+    - role: "textbox"  # 根据实际页面快照，角色是textbox
+
+  # 当前页码信息显示
+  page_info_selectors:
+    - text: "共*条"  # 总条数
+    - text: "*页"  # 总页数
+
+  # 最大页数限制（根据策略文档，翻页式平台约60篇文章，每页12条）
+  # 实际页面显示共100条，9页，建议调整为采集前5页（约60篇文章）
+  max_pages: 5
+
+  # 每页文章数（根据实际页面显示为12条）
+  articles_per_page: 12
+
+# -------------------- 数据采集限制 --------------------
+# 根据策略文档，总则第4条：翻页式平台保证提取约60篇文章
+max_articles: 60

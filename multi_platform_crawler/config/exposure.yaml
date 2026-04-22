@@ -1,0 +1,50 @@
+# 多平台内容采集系统 - 曝光量静态配置
+# 曝光量实际为各平台粉丝量，非动态爬取值
+# 格式：平台标识: 数值（null 表示无数据，采集时显示为 "/"）
+# 
+# 重要：平台标识必须与 PLATFORM_COLLECTOR_MAP 中的键一致
+# 映射关系：
+#   geekpark_wechat -> geekpark_wechat (微信公众号)
+#   geekpark_web -> geekpark_web (极客公园官网)
+#   weibo -> weibo (微博)
+#   toutiao -> toutiao (头条号)
+#   zhihu -> zhihu (知乎)
+#   baijiahao -> baijiahao (百家号)
+#   netease -> netease (网易号)
+#   qq -> qq (企鹅号)
+#   yidian -> yidian (一点资讯)
+#   xueqiu -> xueqiu (雪球)
+#   zaker -> zaker (ZAKER)
+
+# 极客公园微信公众号
+geekpark_wechat: 870000
+
+# 极客公园官网
+geekpark_web: null
+
+# 极客公园微博
+weibo: 1490000
+
+# 极客公园头条号
+toutiao: 435000
+
+# 极客公园知乎号
+zhihu: 200000
+
+# 极客公园百家号
+baijiahao: 200000
+
+# 极客公园网易号
+netease: 80000
+
+# 极客公园企鹅号
+qq: 180000
+
+# 极客公园一点资讯号
+yidian: 23000
+
+# 极客公园雪球号
+xueqiu: 26000
+
+# 极客公园ZAKER号
+zaker: 440000

@@ -1,0 +1,251 @@
+# ============================================================
+# 极客公园微信公众号采集器配置
+# 平台: 微信公众号 (mp.weixin.qq.com)
+# 登录方式: 扫码登录
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+platform: "geekpark_wechat"
+
+# -------------------- URLs --------------------
+# 主页面URL（登录后的首页）
+main_url: "https://mp.weixin.qq.com/cgi-bin/home?t=home/index&lang=zh_CN"
+
+# 登录页面URL
+login_url: "https://mp.weixin.qq.com/"
+
+# 文章列表页URL（发表记录页）
+data_page_url: "https://mp.weixin.qq.com/cgi-bin/appmsgpublish?sub=list&begin=0&count=10"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- 超时配置 (毫秒) --------------------
+default_timeout: 30000
+element_timeout: 8000
+element_short_timeout: 5000
+element_fallback_timeout: 1000
+
+# -------------------- 重试配置 --------------------
+max_retries: 2
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# -------------------- 人类行为模拟 --------------------
+typing_delay_min: 50
+typing_delay_max: 150
+
+# -------------------- 功能开关 --------------------
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: false
+
+# -------------------- 代理配置 --------------------
+proxy:
+  enabled: false  # 是否启用代理
+  server: ""      # 代理服务器地址，如: http://127.0.0.1:7890
+  username: ""    # 代理用户名（可选）
+  password: ""    # 代理密码（可选）
+
+# -------------------- 反爬策略配置 --------------------
+anti_spider:
+  # 禁用图片加载（减少请求，降低风控概率）
+  disable_images: true
+  # 禁用CSS加载（可选，可能影响页面渲染）
+  disable_css: false
+  # 随机视口大小（用于指纹随机化）
+  random_viewport: true
+  viewport_width_range: [1200, 1920]
+  viewport_height_range: [800, 1080]
+  # 设备缩放因子
+  device_scale_factors: [1, 1.25, 1.5, 2]
+  # 请求间隔范围（秒）
+  request_interval_min: 2
+  request_interval_max: 5
+  # 操作间隔范围（秒）
+  action_interval_min: 0.5
+  action_interval_max: 1.5
+  
+  # 风控页面检测关键词
+  risk_detection:
+    keywords:
+      - "环境异常"
+      - "完成验证"
+      - "访问超时"
+      - "操作频繁"
+      - "请稍后重试"
+      - "系统繁忙"
+    # 检测到风控后的处理：block（暂停）/retry（重试）/abort（中止）
+    action: "block"
+    # 暂停等待时间（秒）
+    block_wait_time: 30
+
+# -------------------- 浏览器指纹配置 --------------------
+browser_fingerprint:
+  # 固定的locale和时区
+  locale: "zh-CN"
+  timezone_id: "Asia/Shanghai"
+  # 颜色深度
+  color_schemes: ["light", "dark"]
+  # 是否启用触摸事件
+  has_touch: false
+  # 是否持久化上下文（保持登录态）
+  persistent_context: true
+
+# -------------------- 扫码登录配置 --------------------
+login:
+  type: "qrcode"
+  qrcode_wait_timeout: 300000  # 总等待时间5分钟（毫秒）
+  check_interval: 15000        # 每15秒检测一次登录态
+
+# -------------------- 登录态验证选择器 --------------------
+# 登录成功后页面上会显示的元素（多优先级Fallback）
+verify_logged_in_selectors:
+  - role: "generic"
+    name: "内容管理"
+  - role: "link"
+    name: "首页"
+  - css: "#menu_bar li:nth-child(1) a"
+
+# 登录成功后URL包含的特征
+login_check:
+  success_url_contains: "/cgi-bin/home"
+  logged_in_element:
+    - role: "generic"
+      name: "内容管理"
+    - role: "link"
+      name: "首页"
+    - css: ".menu_bar"
+
+# -------------------- Cookie 失效检测配置 --------------------
+# 用于检测 Cookie 登录态过期的页面特征
+cookie_invalid_check:
+  # Cookie 失效页面的文本特征（最高优先级）
+  invalid_text_indicators:
+    - "登录超时"
+    - "请重新登录"
+  # Cookie 失效页面的 heading 特征
+  invalid_heading_selectors:
+    - role: "heading"
+      name: "登录超时， 请重新登录"
+    - css: "h2:has-text('登录超时')"
+  # Cookie 失效页面的登录按钮选择器
+  relogin_button_selectors:
+    - role: "link"
+      name: "登录"
+    - css: "a[href*='loginpage']"
+    - xpath: "//a[contains(@href,'loginpage') and text()='登录']"
+  # 用于区分的反向特征（登录后页面才有的元素）
+  logged_in_indicators:
+    - role: "generic"
+      name: "内容管理"
+    - role: "generic"
+      name: "互动管理"
+    - css: ".menu_bar"
+    - css: "#menu_bar"
+
+# -------------------- 导航配置 --------------------
+# 从首页导航到"内容管理 -> 发表记录"的步骤
+# MCP验证：登录后首页 -> 点击内容管理(generic) -> 展开子菜单 -> 点击发表记录(link) -> 到达发表记录页
+navigation:
+  steps:
+    - name: "点击内容管理菜单"
+      selectors:
+        # MCP验证有效：generic "内容管理" [ref=e20] [cursor=pointer]
+        - role: "generic"
+          name: "内容管理"
+        # 备用：通过文本定位
+        - text: "内容管理"
+      wait_for:
+        # 等待子菜单展开：发表记录链接出现
+        - role: "link"
+          name: "发表记录"
+    - name: "点击发表记录子菜单"
+      selectors:
+        # MCP验证有效：link "发表记录" [ref=e36] [cursor=pointer]
+        - role: "link"
+          name: "发表记录"
+        # 备用：通过href定位
+        - css: "a[href*='appmsgpublish']"
+      wait_for:
+        # 等待发表记录页加载：发表记录标题出现
+        - role: "heading"
+          name: "发表记录"
+        # 备用：文章列表容器出现
+        - css: ".weui-desktop-list__list"
+
+# -------------------- 文章列表配置 --------------------
+# 基于发表记录页面实际结构配置（MCP验证）
+# 页面URL: /cgi-bin/appmsgpublish?sub=list&begin=0&count=10
+article_list:
+  # iframe选择器（微信公众号平台无iframe，MCP验证）
+  iframe_selectors: []
+  
+  # 列表容器选择器 - 发表记录列表
+  # MCP验证：文章列表在 .publish_content 容器中
+  list_container: ".publish_content"
+  
+  # 行元素选择器（单篇文章）
+  # MCP验证：每篇文章包含 .weui-desktop-mass__overview（时间/状态）和 .weui-desktop-mass-appmsg（标题/数据）
+  list_row: ".weui-desktop-mass__overview"
+  
+  # 数据字段选择器（与标准字段映射）
+  # MCP验证字段结构（通过evaluate获取的实际HTML）：
+  # - 时间: .weui-desktop-mass__time (em元素)
+  # - 标题: .weui-desktop-mass-appmsg__title (a元素，包含href)
+  # - 阅读数: .appmsg-view .weui-desktop-mass-media__data__inner
+  # - 点赞数: .appmsg-like .weui-desktop-mass-media__data__inner
+  # - 分享数: .appmsg-share .weui-desktop-mass-media__data__inner
+  # - 推荐数: .appmsg-haokan .weui-desktop-mass-media__data__inner
+  # - 评论数: .appmsg-comment .weui-desktop-mass-media__data__inner
+  # - 划线数: .appmsg-underline .weui-desktop-mass-media__data__inner
+  field_selectors:
+    # 文章标题 - 在.weui-desktop-mass-appmsg__title中
+    title: ".weui-desktop-mass-appmsg__title"
+    # 文章链接 - 从title选择器的href属性提取
+    url: ".weui-desktop-mass-appmsg__title@href"
+    # 发布时间 - .weui-desktop-mass__time元素
+    publish_time: ".weui-desktop-mass__time"
+    # 阅读人数 - .appmsg-view容器中的数据
+    read_count: ".appmsg-view .weui-desktop-mass-media__data__inner"
+    # 点赞人数 - .appmsg-like容器中的数据
+    like_count: ".appmsg-like .weui-desktop-mass-media__data__inner"
+    # 分享人数 - .appmsg-share容器中的数据
+    share_count: ".appmsg-share .weui-desktop-mass-media__data__inner"
+    # 评论人数 - .appmsg-comment容器中的数据
+    comment_count: ".appmsg-comment .weui-desktop-mass-media__data__inner"
+
+# -------------------- 分页配置 --------------------
+# MCP验证：发表记录页底部有分页控件
+# - 页码按钮：1, 2, 3, 4 ... 1173
+# - 下一页链接：link "下一页" [ref=e567]
+pagination:
+  type: "button"  # 翻页式
+  button_selectors:
+    # MCP验证有效：link "下一页" [ref=e567] [cursor=pointer]
+    - role: "link"
+      name: "下一页"
+    - text: "下一页"
+    - css: ".weui-desktop-pagination__nav a"
+  max_pages: 6  # 最多翻6页，约60篇文章
+
+# -------------------- 字段映射说明 --------------------
+# 标准字段 -> 微信公众号字段对应关系
+field_mapping:
+  platform: "极客公园微信"  # 固定值
+  publish_time: "publish_time"  # 发布时间
+  title: "title"  # 文章标题（用户提供）
+  url: "url"  # 文章链接
+  exposure: "/"  # 不采集
+  read: "read_count"  # 阅读人数
+  recommend: "/"  # 不采集
+  comment: "comment_count"  # 留言人数
+  like: "like_count"  # 点赞人数
+  forward: "share_count"  # 分享人数
+  collect: "collect_count"  # 收藏人数

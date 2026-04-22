@@ -1,0 +1,53 @@
+# Virtual environment
+.venv/
+env/
+
+# Log files
+logs/
+*.log
+
+# Build artifacts
+build/
+dist/
+*.spec
+
+# Cookies
+cookies/
+
+# Data files
+data/
+
+# Debug files
+debug/
+
+# Snapshot files
+snapshots/
+
+# Environment variables
+.env
+
+# Encryption keys
+.encryption.key
+.session_key
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python files
+__pycache__/
+*.pyc
+
+# Playwright browsers
+ms-playwright/
+
+# Other
+.comate/
+.promopt_template/
+requirementstxt

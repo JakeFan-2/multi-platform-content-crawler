@@ -1,0 +1,163 @@
+# ============================================================
+# 知乎平台采集器配置
+# ============================================================
+# 生成时间: 2026-03-22
+# 平台说明: 知乎机构号后台 - 内容分析
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+platform: "zhihu"
+
+# -------------------- URLs --------------------
+# 主页面URL（知乎首页，不需要登录即可访问）
+main_url: "https://www.zhihu.com"
+
+# 登录页面URL
+login_url: "https://www.zhihu.com/signin?next=%2F"
+
+# 文章数据后台URL（单篇文章分析）
+article_list_url: "https://www.zhihu.com/organization/analytics/work/article?page=1&tab=single"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取：ZHIHU_USERNAME / ZHIHU_PASSWORD
+username: "{{env:ZHIHU_USERNAME}}"
+password: "{{env:ZHIHU_PASSWORD}}"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- 超时配置 (毫秒) --------------------
+default_timeout: 30000
+element_timeout: 8000
+element_short_timeout: 5000
+element_fallback_timeout: 1000
+
+# -------------------- 重试配置 --------------------
+max_retries: 2
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# -------------------- 人类行为模拟 --------------------
+typing_delay_min: 50
+typing_delay_max: 150
+
+# -------------------- 功能开关 --------------------
+enable_stealth: true
+enable_user_agent_random: true
+enable_human_typing: true
+
+# -------------------- 登录选择器 --------------------
+login:
+  # 密码登录切换按钮（知乎默认显示验证码登录）
+  password_tab_selectors:
+    - role: "button"
+      name: "密码登录"
+    - css: "button[class*='SignFlow-accountLogin']"
+
+  # 用户名输入框选择器（按优先级排序）
+  username_selectors:
+    - css: "input[placeholder='手机号或邮箱']"
+    - css: "input[type='text']"
+    - role: "textbox"
+      name: "手机号或邮箱"
+
+  # 密码输入框选择器
+  password_selectors:
+    - css: "input[name='password']"
+    - css: "input[placeholder='密码']"
+    - css: "input[type='password']"
+    - role: "textbox"
+      name: "密码"
+
+  # 登录按钮选择器
+  login_button_selectors:
+    - role: "button"
+      name: "登录"
+    - css: "button[type='submit']"
+    - css: "button.SignFlow-submitButton"
+
+# -------------------- 登录态验证 --------------------
+login_check:
+  # 登录成功后URL包含的关键字
+  success_url_contains: "/organization"
+  # 登录后应存在的元素选择器
+  logged_in_element:
+    - css: ".Avatar.AppHeader-profileAvatar"
+    - css: "[class*='AppHeader-profileAvatar']"
+
+# -------------------- 数据页面配置 --------------------
+data_page:
+  # 单篇文章分析标签选择器
+  single_article_tab:
+    - css: ".Tabs-link"
+    - role: "tab"
+      name: "单篇文章分析"
+
+# -------------------- 文章列表选择器 --------------------
+article_list:
+  # 表格选择器
+  table_selectors:
+    - css: ".CreatorTable-table"
+    - css: "table.CreatorTable-table"
+
+  # 行选择器
+  row_selectors:
+    - css: ".CreatorTable-tableRow"
+    - css: "tr.CreatorTable-tableRow"
+
+  # 数据单元格选择器
+  cell_selectors:
+    # 标题单元格
+    title_cell: "td.CreatorTable-tableData:first-child"
+    # 阅读量单元格
+    read_count_cell: "td.CreatorTable-tableData:nth-child(2)"
+    # 互动数单元格
+    interaction_cell: "td.CreatorTable-tableData:nth-child(3)"
+
+  # 字段选择器
+  field_selectors:
+    # 文章标题
+    title:
+      - css: ".css-1bcljsj"
+      - css: "div[class*='1bcljsj']"
+    # 发布日期
+    publish_date:
+      - css: ".css-11v79pp"
+      - css: "div[class*='11v79pp']"
+    # 文章链接
+    url:
+      - css: "a[href*='zhuanlan']"
+
+# -------------------- 翻页配置 --------------------
+pagination:
+  # 下一页按钮
+  next_button:
+    - css: ".CreatorPagination-nextButton"
+    - css: "button.CreatorPagination-nextButton:not([disabled])"
+  # 页码信息
+  page_info:
+    - css: ".CreatorPagination-text"
+
+# -------------------- 互动数解析规则 --------------------
+# 格式: "X 赞同 · Y 评论 · Z 喜欢 · W 收藏 · V 分享"
+interaction_pattern: "(\\d+)\\s*赞同\\s*·\\s*(\\d+)\\s*评论\\s*·\\s*(\\d+)\\s*喜欢\\s*·\\s*(\\d+)\\s*收藏\\s*·\\s*(\\d+)\\s*分享"
+
+# -------------------- 字段映射 --------------------
+# 平台字段 -> 标准字段
+field_mapping:
+  url: "url"
+  title: "title"
+  publish_date: "publish_time"
+  read_count: "read_count"
+  # 赞同数 + 喜欢数 = 点赞量
+  agree_count: "like_count_part1"
+  like_count: "like_count_part2"
+  comment_count: "comment_count"
+  collect_count: "collect_count"
+  share_count: "share_count"

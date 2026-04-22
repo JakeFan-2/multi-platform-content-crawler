@@ -1,0 +1,159 @@
+# ============================================================
+# 一点资讯平台采集器配置
+# ============================================================
+
+# -------------------- 基础信息 --------------------
+# 平台标识符（与文件名一致）
+platform: "yidian"
+
+# -------------------- URLs --------------------
+# 主页面URL（登录后的首页）
+main_url: "http://mp.yidianzixun.com/#/Home"
+
+# 登录页面URL（访问此URL会自动跳转到登录页）
+login_url: "http://mp.yidianzixun.com/#/ArticleManual/original/publish"
+
+# -------------------- 认证信息 --------------------
+# 从环境变量读取：YIDIAN_USERNAME / YIDIAN_PASSWORD
+username: "{{env:YIDIAN_USERNAME}}"
+password: "{{env:YIDIAN_PASSWORD}}"
+
+# -------------------- Cookie设置 --------------------
+cookie_dir: "cookies"
+cookie_file: "{{cookie_dir}}/{{platform}}.json"
+
+# -------------------- 超时配置 (毫秒) --------------------
+# 页面默认超时
+default_timeout: 30000
+# 元素等待超时
+element_timeout: 8000
+# 短超时（用于快速检查）
+element_short_timeout: 5000
+# 兜底超时
+element_fallback_timeout: 1000
+
+# -------------------- 重试配置 --------------------
+# 最大重试次数
+max_retries: 2
+# 重试延迟范围（毫秒）
+retry_delay_min: 3000
+retry_delay_max: 5000
+
+# -------------------- User-Agent --------------------
+user_agents:
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+
+# -------------------- 人类行为模拟 --------------------
+# 输入延迟（毫秒）
+typing_delay_min: 50
+typing_delay_max: 150
+
+# -------------------- 功能开关 --------------------
+# 是否启用反检测
+enable_stealth: true
+# 是否随机User-Agent
+enable_user_agent_random: true
+# 是否启用人类模拟输入
+enable_human_typing: true
+
+# -------------------- 登录选择器 --------------------
+login:
+  # 着陆页登录按钮选择器（点击后显示登录表单）
+  landing_login_button_selectors:
+    - css: "text=登录"
+    - css: "button:has-text('登录')"
+
+  # 用户名输入框选择器（按优先级排序）
+  username_selectors:
+    - css: "input[name='username']"
+    - css: "input[type='text']"
+    - css: "input.input"
+    - css: "input[placeholder='邮箱 / 手机']"
+    - role: "textbox"
+      name: "邮箱 / 手机"
+
+  # 密码输入框选择器
+  password_selectors:
+    - css: "input[name='password']"
+    - css: "input[type='password']"
+    - css: "input.input"
+    - css: "input[placeholder='密码']"
+    - role: "textbox"
+      name: "密码"
+
+  # 登录表单中的登录按钮选择器
+  login_button_selectors:
+    - css: "button[type='submit']"
+    - css: "button.new-s-button"
+    - css: "button:has-text('登录')"
+    - role: "button"
+      name: "登录"
+
+# -------------------- 导航选择器 --------------------
+# 导航到内容管理页面
+navigation:
+  # 内容管理菜单选择器
+  content_management_selectors:
+    - css: "a[href*='ArticleManual/original/publish']"
+    - css: ".menu-item.current"
+    - text: "内容管理"
+
+# -------------------- 登录态验证 --------------------
+# 配置登录后页面特征
+login_check:
+  # 登录成功后URL包含的关键字
+  success_url_contains: "/#/Home"
+  # 登录后应存在的元素选择器
+  logged_in_element:
+    - css: ".user-name"
+    - css: "a[href='#/ArticleManual/original/publish']"
+
+# -------------------- 文章列表选择器 --------------------
+article_list:
+  # iframe选择器（无iframe，留空）
+  iframe_selectors: []
+
+  # 文章列表容器选择器
+  list_container: "generic:has(h4 a[href*='www.yidianzixun.com/article/'])"
+
+  # 文章项选择器
+  list_row: "generic:has(h4 a[href*='www.yidianzixun.com/article/'])"
+
+  # 字段选择器（基于实际页面结构）
+  field_selectors:
+    title: "h4 a"
+    url: "h4 a"
+    publish_time: "paragraph"
+    exposure_count: "generic:has-text('推荐')"
+    read_count: "generic:has-text('阅读')"
+    like_count: "generic:has-text('评论')"
+    share_count: "generic:has-text('分享')"
+    collect_count: "generic:has-text('收藏')"
+
+# -------------------- 文章URL模式 --------------------
+# 用于拼接完整文章URL
+# {article_id} 会替换为提取的文章ID
+article_url_pattern: "https://www.yidianzixun.com/article/{article_id}"
+
+# -------------------- 分页配置 --------------------
+pagination:
+  type: "button"
+  # 下一页按钮选择器
+  next_button_selectors:
+    - css: ".pagination-container .next"
+    - css: ".pagination-container .page-item:not(.current)"
+  # 页码输入框
+  page_input: ".pagination-container .jump-page"
+  # 跳转按钮
+  jump_button: ".pagination-container .jump-btn"
+  # 当前页码
+  current_page: ".pagination-container .page-item.current"
+  # 总页数
+  total_pages: ".pagination-container .page-item:last-child"
+
+# -------------------- 列表总数配置 --------------------
+# 总数显示选择器
+total_count:
+  selector: "p.total"
+  text_pattern: "共(\\d+)条"
