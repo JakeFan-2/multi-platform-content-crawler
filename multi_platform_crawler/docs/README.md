@@ -45,132 +45,196 @@
 该图展示从用户交互到底层存储的完整技术分层，标明了各层核心模块及关键通信方式。
 
 ```mermaid
-flowchart TB
+graph TD
+    subgraph 系统总架构
+        A[表现层] --> B[调度采集层]
+        B --> C[采集器层]
+        C --> D[工具层]
+        D --> E[数据存储层]
+    end
+
     subgraph 表现层
-        direction TB
-        GUI[PySide6 主界面<br/>启动方式：python main.py]
-        GUI_Components[核心组件]
+        A1[PySide6 主界面] --> A2[平台选择模块]
+        A1 --> A3[标题/关键词输入]
+        A1 --> A4[手动登录/采集]
+        A1 --> A5[实时日志展示]
+        A1 --> A6[数据结果展示]
+        A1 --> A7[工具模块]
     end
 
     subgraph 调度采集层
-        direction TB
-        Thread[CrawlThread<br/>QThread + asyncio]
-        Scheduler[CrawlScheduler<br/>调度中心]
-        Collector[平台采集器<br/>10个平台]
-        Collector_Modules[采集器内部模块]
+        B1[CrawlThread<br/>QThread + asyncio] --> B2[CrawlScheduler<br/>调度中心]
+        B2 --> B3[平台FIFO串行调度]
+        B2 --> B4[双模式登录控制]
+        B2 --> B5[浏览器模式控制]
+        B2 --> B6[策略一采集执行]
+        B2 --> B7[数据归一化处理]
+        B2 --> B8[异常处理与快照]
+    end
+
+    subgraph 采集器层
+        C1[BaseCollector 基类] --> C2[10个平台采集器]
+        C2 --> C3[ConfigLoader]
+        C2 --> C4[AntiSpiderHelper]
+        C2 --> C5[RetryManager]
+        C2 --> C6[LoginManager]
+        C2 --> C7[NavigationManager]
+        C2 --> C8[TitleMatcher]
+        C2 --> C9[ArticleListExtractor]
     end
 
     subgraph 工具层
-        direction TB
-        Registry[PlatformRegistry<br/>平台注册与查询]
-        Matcher[TitleMatcher<br/>三级标题匹配]
-        Security[加密模块<br/>Fernet + AES]
-        Feishu[飞书导入]
-        Exposure[ExposureLoader<br/>曝光量加载]
-        Ops[Ops<br/>日志轮转]
+        D1[PlatformRegistry] --> D2[平台注册与查询]
+        D3[TitleMatcher] --> D4[三级标题匹配算法]
+        D5[ExposureLoader] --> D6[静态曝光量加载]
+        D7[FeishuWorker] --> D8[飞书导入工作线程]
+        D9[FeishuExporter] --> D10[飞书API封装]
+        D11[Ops] --> D12[日志轮转/健康检查]
     end
 
     subgraph 数据存储层
-        direction TB
-        YAML[platforms/*.yaml<br/>配置文件]
-        ExposureConfig[config/exposure.yaml<br/>曝光量配置]
-        Cookie[cookies/*.enc<br/>加密Cookie]
-        CSV[data/*.csv<br/>CSV导出]
-        Log[logs/*.log<br/>日志快照]
-        Key[.encryption.key<br/>加密密钥]
+        E1[platforms/*.yaml] --> E2[核心配置文件]
+        E3[config/exposure.yaml] --> E4[静态曝光量配置]
+        E5[.encryption.key] --> E6[Fernet对称加密密钥]
+        E7[cookies/*.enc] --> E8[加密Cookie存储]
+        E9[data/*.csv] --> E10[CSV数据导出]
+        E11[logs/*.log] --> E12[日志文件]
+        E13[snapshots/] --> E14[异常快照]
     end
 
-    GUI --> Thread
-    Thread --> Scheduler
-    Scheduler --> Collector
-    Collector --> Collector_Modules
-    Collector --> Registry
-    Collector --> Matcher
-    Collector --> Security
-    Collector --> YAML
-    Collector --> Cookie
-    Scheduler --> Exposure
-    Scheduler --> Feishu
-    Scheduler --> CSV
-    Scheduler --> Log
-
+    style 系统总架构 fill:#f0f2f5,stroke:#8c8c8c,stroke-width:2px
     style 表现层 fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
     style 调度采集层 fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
-    style 工具层 fill:#f6ffed,stroke:#52c41a,stroke-width:2px
-    style 数据存储层 fill:#fff7e6,stroke:#faad14,stroke-width:2px
+    style 采集器层 fill:#f6ffed,stroke:#52c41a,stroke-width:2px
+    style 工具层 fill:#f9f0ff,stroke:#722ed1,stroke-width:2px
+    style 数据存储层 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
 ```
 
-### 2. GUI 界面架构图（区域布局与信号连接）
-为你梳理了一份综合性 GUI 架构图，它融合了所有区域、控件以及跨线程的信号连接关系，便于开发与 AI 精确解析。
+**架构说明：**
+- **表现层**：PySide6 主界面，包含平台选择、标题输入、手动登录、实时日志、数据展示和工具模块
+- **调度采集层**：独立子线程，负责平台调度、登录控制、采集执行和数据处理
+- **采集器层**：10个平台采集器，均继承 BaseCollector，包含配置加载、反爬虫、登录管理等模块
+- **工具层**：提供平台注册、标题匹配、曝光量加载、飞书导入等工具功能
+- **数据存储层**：本地文件系统存储，包含配置文件、加密Cookie、导出数据、日志和快照
+
+### 2. GUI 界面架构图（区域布局）
+为你梳理了一份综合性 GUI 架构图，它融合了所有区域、控件以及跨线程的信号连接关系。
 
 ```mermaid
-flowchart TD
-    subgraph GUI[Qt 主界面]
-        direction TB
-        A1[1. 平台选择模块<br/>10个平台复选框]
-        A2[2. 标题/关键词输入<br/>最多5条标题]
-        A3[3. 执行控制<br/>启动/暂停/停止]
-        A4[4. 手动登录平台<br/>登录失败队列]
-        A5[5. 手动登录采集模块<br/>有头浏览器模式]
-        A6[6. 实时日志展示<br/>QTextBrowser]
-        A7[7. 采集结果表格<br/>11标准字段]
-        A8[8. 工具模块<br/>CSV导出/飞书导入]
+graph TD
+    subgraph MainWindow[Qt 主界面 - QScrollArea 垂直滚动]
+        A[1. 平台选择模块] --> A1[10个平台复选框]
+        A --> A2[全选/全不选按钮]
+        
+        B[2. 标题/关键词输入] --> B1[最多5条标题输入]
+        B --> B2[动态关键词输入]
+        
+        C[3. 执行控制] --> C1[启动采集按钮]
+        C --> C2[暂停按钮]
+        C --> C3[停止按钮]
+        C --> C4[状态显示]
+        
+        D[4. 手动登录平台] --> D1[自动登录失败队列]
+        D --> D2[手动登录采集按钮]
+        
+        E[5. 手动登录采集模块] --> E1[10平台列表]
+        E --> E2[手动登录并采集按钮]
+        
+        F[6. 实时日志展示] --> F1[QTextBrowser]
+        
+        G[7. 采集结果表格] --> G1[QTableWidget]
+        G --> G2[11标准字段]
+        G --> G3[未匹配标题列表]
+        
+        H[8. 工具模块] --> H1[导出CSV按钮]
+        H --> H2[导入飞书按钮]
+        H --> H3[清空数据按钮]
     end
 
-    subgraph Signals[信号连接]
-        direction TB
-        S1[主线程信号<br/>start_signal<br/>manual_login_signal]
-        S2[子线程信号<br/>log_signal<br/>data_signal<br/>login_required_signal<br/>finish_signal]
-    end
-
-    GUI --> Signals
-
-    style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px
-    style A1 fill:#ffffff,stroke:#333
-    style A2 fill:#ffffff,stroke:#333
-    style A3 fill:#ffffff,stroke:#333
-    style A4 fill:#ffffff,stroke:#333
-    style A5 fill:#ffffff,stroke:#333
-    style A6 fill:#ffffff,stroke:#333
-    style A7 fill:#ffffff,stroke:#333
-    style A8 fill:#ffffff,stroke:#333
-    style Signals fill:#f6ffed,stroke:#52c41a,stroke-width:2px
+    style MainWindow fill:#fef0f0,stroke:#f5222d,stroke-width:2px
+    style A fill:#ffffff,stroke:#333
+    style B fill:#ffffff,stroke:#333
+    style C fill:#ffffff,stroke:#333
+    style D fill:#ffffff,stroke:#333
+    style E fill:#ffffff,stroke:#333
+    style F fill:#ffffff,stroke:#333
+    style G fill:#ffffff,stroke:#333
+    style H fill:#ffffff,stroke:#333
 ```
+
+**GUI 说明：**
+- **区域1**：平台选择模块，包含10个平台复选框和全选/全不选按钮
+- **区域2**：标题/关键词输入，最多支持5条标题，微博/头条超过30字时显示关键词输入
+- **区域3**：执行控制，包含启动/暂停/停止按钮和状态显示
+- **区域4**：手动登录平台，显示自动登录失败的平台队列
+- **区域5**：手动登录采集模块，可直接选择平台进行手动登录采集
+- **区域6**：实时日志展示，显示采集过程的日志信息
+- **区域7**：采集结果表格，展示采集到的数据和未匹配的标题
+- **区域8**：工具模块，提供导出CSV、导入飞书和清空数据功能
 
 ### 3. 项目核心执行流程图
 清晰展示从调度到采集、数据回传的完整逻辑链，包含手动登录两条路径。
 
 ```mermaid
-flowchart TD
-    A[用户操作] --> B[CrawlThread]
-    A --> C[CrawlScheduler]
-    B --> C
-    C --> D[execute_platform<br/>自动无头]
-    C --> E[手动登录队列]
-    E --> F[execute_manual_crawl<br/>有头浏览器]
-    D --> G[BaseCollector]
-    F --> G
-    G --> H[crawl]
-    H --> I[data_signal<br/>log_signal]
-    I --> J[GUI主线程更新]
-    J --> K[数据展示]
-    J --> L[日志展示]
-    J --> M[飞书导入]
+graph TD
+    A[用户操作] -->|点击启动采集| B[CrawlThread 启动]
+    A -->|点击手动登录采集| C[手动登录流程]
+    
+    B --> D[CrawlScheduler 调度]
+    D --> E{自动登录}
+    E -->|成功| F[execute_platform 自动采集]
+    E -->|失败| G[加入手动登录队列]
+    
+    G -->|用户选择| C
+    C --> H[启动有头浏览器]
+    H --> I[用户完成登录]
+    I --> J[execute_manual_crawl 手动采集]
+    
+    F --> K[BaseCollector 处理]
+    J --> K
+    K --> L[ensure_login 登录验证]
+    L --> M[crawl 采集执行]
+    M --> N[result_callback 结果处理]
+    
+    N --> O[data_signal 数据信号]
+    N --> P[log_signal 日志信号]
+    O --> Q[GUI 主线程更新]
+    P --> Q
+    Q --> R[数据表格显示]
+    Q --> S[日志输出]
+    Q --> T[飞书导入]
 
     style A fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
     style B fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
-    style C fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style C fill:#fef0f0,stroke:#f5222d,stroke-width:2px
     style D fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
-    style E fill:#fef0f0,stroke:#52c41a,stroke-width:2px
-    style F fill:#fef0f0,stroke:#52c41a,stroke-width:2px
-    style G fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
-    style H fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
-    style I fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
-    style J fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
-    style K fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
-    style L fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
-    style M fill:#f6ffed,stroke:#52c41a,stroke-width:2px
+    style E fill:#fff2e8,stroke:#fa8c16,stroke-width:2px
+    style F fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style G fill:#fef0f0,stroke:#f5222d,stroke-width:2px
+    style H fill:#fef0f0,stroke:#f5222d,stroke-width:2px
+    style I fill:#fef0f0,stroke:#f5222d,stroke-width:2px
+    style J fill:#fef0f0,stroke:#f5222d,stroke-width:2px
+    style K fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style L fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style M fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style N fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style O fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style P fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style Q fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
+    style R fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
+    style S fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
+    style T fill:#f6ffed,stroke:#52c41a,stroke-width:2px
 ```
+
+**执行流程说明：**
+1. **用户操作**：点击启动采集或手动登录采集
+2. **调度流程**：CrawlScheduler 负责平台调度和登录控制
+3. **自动采集**：自动登录成功后执行无头浏览器采集
+4. **手动登录**：自动登录失败或用户直接选择手动登录
+5. **采集执行**：BaseCollector 处理登录验证和采集逻辑
+6. **结果处理**：将采集结果通过信号传递给主线程
+7. **数据展示**：在GUI界面显示采集数据和日志信息
+8. **数据导出**：支持导出CSV或导入飞书
 
 ### 4. 打包后项目目录架构图
 
