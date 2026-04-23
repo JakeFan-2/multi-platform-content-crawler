@@ -139,34 +139,6 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph GUI[MainWindow · QScrollArea]
-        direction TB
-
-        %% 区域1
-        P1[区域1 平台选择\n- 10平台复选框\n- 全选/全不选]
-
-        %% 区域2
-        P2[区域2 标题输入\n- 最多5条\n- 动态关键词槽]
-
-        %% 区域3
-        P3[区域3 执行控制\n- 启动 / 暂停 / 停止]
-
-        %% 区域4
-        P4[区域4 自动登录失败队列\n- QListWidget\n- 手动登录采集按钮]
-
-        %% 区域5
-        P5[区域5 手动登录并采集\n- 平台列表\n- 手动登录按钮]
-
-        %% 区域6
-        P6[区域6 实时日志\nQTextBrowser]
-
-        %% 区域7
-        P7[区域7 数据结果\nQTableWidget]
-
-        %% 区域8
-        P8[区域8 工具\n- 导出CSV\n- 导入飞书\n- 清空数据]
-    end
-
     %% ================= 用户操作流 =================
     P1 --> P3
     P2 --> P3
@@ -180,21 +152,49 @@ flowchart TD
     THREAD_DATA[data_signal] --> P7
     THREAD_LOGIN[login_required_signal] --> P4
 
+    subgraph GUI[MainWindow · QScrollArea]
+        direction TB
+
+        %% 区域1
+        P1[**区域1 平台选择**\n**- 10平台复选框**\n**- 全选/全不选**]
+
+        %% 区域2
+        P2[**区域2 标题输入**\n**- 最多5条**\n**- 动态关键词槽**]
+
+        %% 区域3
+        P3[**区域3 执行控制**\n**- 启动 / 暂停 / 停止**]
+
+        %% 区域4
+        P4[**区域4 自动登录失败队列**\n**- QListWidget**\n**- 手动登录采集按钮**]
+
+        %% 区域5
+        P5[**区域5 手动登录并采集**\n**- 平台列表**\n**- 手动登录按钮**]
+
+        %% 区域6
+        P6[**区域6 实时日志**\n**QTextBrowser**]
+
+        %% 区域7
+        P7[**区域7 数据结果**\n**QTableWidget**]
+
+        %% 区域8
+        P8[**区域8 工具**\n**- 导出CSV**\n**- 导入飞书**\n**- 清空数据**]
+    end
+
     %% 颜色样式
-    style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px
-    style P1 fill:#e6f7ff,stroke:#1890ff
-    style P2 fill:#e6f7ff,stroke:#1890ff
-    style P3 fill:#f0f2ff,stroke:#597ef7
-    style P4 fill:#fff1eb,stroke:#fa8c16
-    style P5 fill:#fff1eb,stroke:#fa8c16
-    style P6 fill:#f6ffed,stroke:#52c41a
-    style P7 fill:#f6ffed,stroke:#52c41a
-    style P8 fill:#fff7e6,stroke:#faad14
-    style SIGNAL_START fill:#ffffff,stroke:#333
-    style SIGNAL_MANUAL fill:#ffffff,stroke:#333
-    style THREAD_LOG fill:#ffffff,stroke:#333
-    style THREAD_DATA fill:#ffffff,stroke:#333
-    style THREAD_LOGIN fill:#ffffff,stroke:#333
+    style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px,font-weight:bold,font-size:16px
+    style P1 fill:#e6f7ff,stroke:#1890ff,font-weight:bold,font-size:14px,font-color:#000000
+    style P2 fill:#e6f7ff,stroke:#1890ff,font-weight:bold,font-size:14px,font-color:#000000
+    style P3 fill:#f0f2ff,stroke:#597ef7,font-weight:bold,font-size:14px,font-color:#000000
+    style P4 fill:#fff1eb,stroke:#fa8c16,font-weight:bold,font-size:14px,font-color:#000000
+    style P5 fill:#fff1eb,stroke:#fa8c16,font-weight:bold,font-size:14px,font-color:#000000
+    style P6 fill:#f6ffed,stroke:#52c41a,font-weight:bold,font-size:14px,font-color:#000000
+    style P7 fill:#f6ffed,stroke:#52c41a,font-weight:bold,font-size:14px,font-color:#000000
+    style P8 fill:#fff7e6,stroke:#faad14,font-weight:bold,font-size:14px,font-color:#000000
+    style SIGNAL_START fill:#ffffff,stroke:#333,font-weight:bold,font-size:14px,font-color:#000000
+    style SIGNAL_MANUAL fill:#ffffff,stroke:#333,font-weight:bold,font-size:14px,font-color:#000000
+    style THREAD_LOG fill:#ffffff,stroke:#333,font-weight:bold,font-size:14px,font-color:#000000
+    style THREAD_DATA fill:#ffffff,stroke:#333,font-weight:bold,font-size:14px,font-color:#000000
+    style THREAD_LOGIN fill:#ffffff,stroke:#333,font-weight:bold,font-size:14px,font-color:#000000
 ```
 
 ### 3. 项目核心执行流程图
