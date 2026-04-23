@@ -184,29 +184,7 @@ flowchart TD
 
 ### 4. 打包后项目目录架构图
 
-```mermaid
-flowchart TD 
-    subgraph 打包交付根目录 
-        direction TB 
-        B1[MultiPlatformCrawler.exe<br/>主程序] 
-        B2[.env.example<br/>配置模板] 
-        B3[collectors/<br/>外置采集器] 
-        B4[platforms/<br/>YAML配置文件] 
-        B5[config/<br/>曝光量配置] 
-        B6[ms-playwright/<br/>浏览器内核] 
-
-        subgraph 运行自动生成目录 
-            B7[cookies/ 加密登录态] 
-            B8[data/ CSV数据] 
-            B9[logs/ 日志文件] 
-            B10[snapshots/ 异常快照] 
-        end 
-    end 
-
-    %% 配色 
-    style 打包交付根目录 fill:#fcffe6,stroke:#a0d911,stroke-width:2px 
-    style 运行自动生成目录 fill:#f0f2f5,stroke:#8c8c8c,stroke-width:1px 
-```
+![打包后项目目录架构图](./images/packaged_directory.png)
 
 ### 4. 打包版使用流程图（用户操作流程）
 
