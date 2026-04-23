@@ -102,7 +102,7 @@ flowchart TB
 
 ```mermaid
 flowchart TD 
-    subgraph Qt 主界面 
+    subgraph GUI[Qt 主界面]
         direction TB 
         A1[1. 平台选择模块<br/>10个平台复选框] 
         A2[2. 标题/关键词输入<br/>最多5条标题] 
@@ -115,7 +115,7 @@ flowchart TD
     end
 
     %% 配色
-    style Qt 主界面 fill:#fef0f0,stroke:#f5222d,stroke-width:2px
+    style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px
     style A1 fill:#ffffff,stroke:#333
     style A2 fill:#ffffff,stroke:#333
     style A3 fill:#ffffff,stroke:#333
