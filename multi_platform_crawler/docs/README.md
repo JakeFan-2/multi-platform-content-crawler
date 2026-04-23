@@ -218,15 +218,28 @@ flowchart TB
     Step3 --> Step4[双击exe启动程序] 
     Step4 --> Step5[选择平台+输入文章标题] 
     Step5 --> Step6[点击启动采集] 
-    Step6 --> Step7{采集完成} 
-    Step7 -->|导出数据| Step8[保存CSV/导入飞书] 
-    Step7 -->|登录失效| Step9[手动登录扫码] 
-    Step8 --> End[使用完成] 
-    Step9 --> Step6 
+    Step6 --> Step7{自动登录成功?} 
+    Step7 -->|是| Step8[继续自动采集] 
+    Step7 -->|否| Step9[自动登录失败<br/>平台进入手动登录队列] 
+    Step9 --> Step10[用户选择失败平台<br/>点击手动登录采集] 
+    Step10 --> Step11[启动有头浏览器] 
+    Step11 --> Step12[等待用户5分钟<br/>完成登录操作] 
+    Step12 --> Step13{登录成功?} 
+    Step13 -->|是| Step14[继续采集] 
+    Step13 -->|否| Step15[登录超时<br/>请重新尝试] 
+    Step14 --> Step16[数据汇总] 
+    Step8 --> Step16 
+    Step16 --> Step17{采集完成} 
+    Step17 -->|导出数据| Step18[保存CSV/导入飞书] 
+    Step18 --> End[使用完成] 
+    Step15 --> Step10 
 
     %% 配色 
     style Start fill:#e6f7ff,stroke:#1890ff 
     style End fill:#f6ffed,stroke:#52c41a 
+    style Step11 fill:#fff2e8,stroke:#fa8c16 
+    style Step12 fill:#fff2e8,stroke:#fa8c16 
+    style Step16 fill:#f6ffed,stroke:#52c41a 
 ```
 
 ## 🚀 核心使用步骤
