@@ -46,6 +46,11 @@ from playwright_stealth import Stealth
 from loguru import logger
 
 
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "一点资讯"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
+
 # ============================================================
 # 1. 配置加载模块
 # ============================================================
@@ -319,7 +324,7 @@ class LoginManager:
             current_url = page.url
             if "/ArticleManual/original/publish" in current_url or "/Home" in current_url:
                 # 检查是否有用户名显示
-                user_name = page.locator("text=极客公园")
+                user_name = page.locator(f"text={ACCOUNT_NICKNAME}")
                 if await user_name.count() > 0:
                     logger.info("✅ 登录态验证成功（找到用户名）")
                     return True
@@ -761,7 +766,7 @@ class ArticleListExtractor:
         """根据 h4 元素提取单篇文章的完整数据"""
         try:
             data = {
-                'platform': "极客公园一点资讯号"
+                'platform': "一点资讯"
             }
 
             # 提取标题

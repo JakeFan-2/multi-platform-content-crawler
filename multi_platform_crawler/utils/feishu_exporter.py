@@ -43,18 +43,16 @@ FEISHU_FIELD_MAP = {
 
 # 发布平台单选选项（必须严格匹配）
 PLATFORM_OPTIONS = [
-    "极客公园微信",
-    "极客公园官网",
-    "极客公园微博",
-    "极客公园头条号",
-    "极客公园知乎号",
-    "极客公园百家号",
-    "极客公园网易号",
-    "极客公园企鹅号",
-    "极客公园一点资讯号",
-    "极客公园搜狐号",
-    "极客公园雪球号",
-    "极客公园ZAKER号"
+    "微信",
+    "微博",
+    "头条号",
+    "知乎",
+    "百家号",
+    "网易号",
+    "企鹅号",
+    "一点资讯",
+    "雪球",
+    "ZAKER"
 ]
 
 
@@ -275,7 +273,7 @@ class FeishuExporter:
                     normalized[field] = "/"
 
             # 注入静态曝光量（覆盖原有值）- 双重保险
-            platform_id = row.get("platform_id") or row.get("platform", "").lower().replace("极客公园", "").replace("号", "").strip()
+            platform_id = row.get("platform_id") or row.get("platform", "").lower().replace("号", "").strip()
             if platform_id and platform_id != "/":
                 exposure_value = exposure_loader.get_exposure(platform_id)
                 if exposure_value != "/":
@@ -516,7 +514,7 @@ async def test_export():
         {
             "publish_time": "2026/03/30",
             "title": "测试文章标题1",
-            "platform": "极客公园微信",
+            "platform": "微信",
             "url": "https://example.com/1",
             "exposure": "1000",
             "read": "500",
@@ -529,7 +527,7 @@ async def test_export():
         {
             "publish_time": "2026/03/31",
             "title": "测试文章标题2",
-            "platform": "极客公园微博",
+            "platform": "微博",
             "url": "https://example.com/2",
             "exposure": "2000",
             "read": "800",

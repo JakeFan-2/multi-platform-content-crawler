@@ -43,6 +43,11 @@ from playwright_stealth import Stealth
 from loguru import logger
 
 
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "网易号"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
+
 # ============================================================
 # 1. 配置加载模块
 # ============================================================
@@ -1836,7 +1841,7 @@ async def crawl(
             article = {
                 'publish_time': data.get('publish_time', ''),
                 'title': data.get('title', ''),
-                'platform': '极客公园网易号',
+                'platform': '网易号',
                 'url': data.get('url', ''),
                 'exposure': data.get('exposure', ''),
                 'read': data.get('read', ''),
@@ -1853,7 +1858,7 @@ async def crawl(
         for target in remaining:
             if unmatched_callback:
                 # 未匹配文章注明：平台名称 + 文章标题
-                unmatched_callback(f"极客公园网易号 {target}")
+                unmatched_callback(f"网易号 {target}")
 
         # 保存登录态
         await login_mgr.save_storage_state(context)
@@ -1944,7 +1949,7 @@ async def run(p: Playwright, headless: bool = False) -> None:
                 article = {
                     'publish_time': data.get('publish_time', ''),
                     'title': data.get('title', ''),
-                    'platform': '极客公园网易号',
+                    'platform': '网易号',
                     'url': data.get('url', ''),
                     'exposure': data.get('exposure', ''),
                     'read': data.get('read', ''),

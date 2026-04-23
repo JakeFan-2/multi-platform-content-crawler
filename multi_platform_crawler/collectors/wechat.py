@@ -17,7 +17,7 @@ DEBUG_TARGETS = [
 
 """
 ===============================================================
-极客公园微信公众号采集器
+微信公众号采集器
 基于扫码登录方式实现 - 终极反检测版本
 ===============================================================
 """
@@ -40,6 +40,11 @@ from datetime import datetime
 from playwright.async_api import async_playwright, Playwright, TimeoutError as PlaywrightTimeoutError
 from loguru import logger
 
+
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "微信公众号"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
 
 # ============================================================
 # 1. 配置加载模块
@@ -1475,7 +1480,7 @@ class ArticleListExtractor:
         """
         try:
             article = {
-                "platform": "极客公园微信",
+                "platform": "微信",
                 "crawl_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
 
@@ -1686,7 +1691,7 @@ class CSVExporter:
                 std_article = {
                     "publish_time": article.get("publish_time", ""),
                     "title": article.get("title", ""),
-                    "platform": article.get("platform", "极客公园微信"),
+                    "platform": article.get("platform", "微信"),
                     "url": article.get("url", ""),
                     "exposure": "/",
                     "read": article.get("read_count", ""),
@@ -1803,7 +1808,7 @@ async def crawl(
 
         # 处理结果
         for data in extracted:
-            data['platform'] = "极客公园微信"
+            data['platform'] = "微信"
             data['crawl_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             success_data.append(data)
             if result_callback:

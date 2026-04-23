@@ -41,6 +41,11 @@ from playwright_stealth import Stealth
 from loguru import logger
 
 
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "头条号"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
+
 # ============================================================
 # 1. 配置加载模块
 # ============================================================
@@ -1008,7 +1013,7 @@ class ArticleListExtractor:
                     article = {
                         'publish_time': publish_time,
                         'title': title,
-                        'platform': "极客公园头条号",
+                        'platform': "头条号",
                         'url': url,
                         'exposure': '/',  # 曝光量由 ExposureLoader 静态配置注入，不在采集器中提取
                         'read': read_count if read_count else '/',
@@ -1172,7 +1177,7 @@ class ArticleListExtractor:
             article = {
                 'publish_time': publish_time if publish_time else '/',
                 'title': title,
-                'platform': "极客公园头条号",
+                'platform': "头条号",
                 'url': article_url,
                 'exposure': exposure if exposure else '/',
                 'read': read_count if read_count else '/',
@@ -1193,7 +1198,7 @@ class ArticleListExtractor:
             return {
                 'publish_time': '/',
                 'title': title,
-                'platform': "极客公园头条号",
+                'platform': "头条号",
                 'url': url,
                 'exposure': '/',
                 'read': '/',
@@ -1511,7 +1516,7 @@ async def crawl(
 
         # 处理结果
         for data in extracted:
-            data['platform'] = "极客公园头条号"
+            data['platform'] = "头条号"
             data['crawl_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             success_data.append(data)
             if result_callback:

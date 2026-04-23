@@ -30,7 +30,7 @@ cookie_file: "{{cookie_dir}}/{{platform}}.json"
 # 1. 优先使用 Cookie 登录（从 xueqiu.json 文件加载）
 # 2. Cookie 失效时，可通过微信扫码登录重新获取
 # 3. 关键 Cookie：xq_a_token, xq_r_token, xq_id_token, s, device_id, cookiesu
-# 4. 验证登录状态：检查右上角是否显示账号名称（如"极客公园"）
+# 4. 验证登录状态：检查右上角是否显示账号名称（如"账号名称"）
 # 5. 验证未登录状态：检查右上角是否显示"未登录"
 
 
@@ -89,12 +89,12 @@ login:
     - css: "nav div span"
     - xpath: "//nav//div//span"
     - xpath: "//*[@id=\"app\"]/div/div/div[1]/nav/div/div/span"
-    - text: "极客公园"
+    - text: "账号名称"
 
 # -------------------- 登录态验证 --------------------
 # 验证登录成功的元素（登录后页面独有的元素）
-# 雪球创作者后台登录成功后，右上角显示账号名称（如"极客公园"）
-# 实际元素: <span class="header_user-name_2xQ">极客公园</span>
+# 雪球创作者后台登录成功后，右上角显示账号名称（如"账号名称"）
+# 实际元素: <span class="header_user-name_2xQ">账号名称</span>
 # CSS: #app > div > div > div:nth-child(1) > nav > div > div > span
 # XPath: //*[@id="app"]/div/div/div[1]/nav/div/div/span
 verify_logged_in_selectors:
@@ -104,7 +104,7 @@ verify_logged_in_selectors:
   - css: "nav div span"  # nav 下的 div 下的 span
   - xpath: "//nav//div//span"  # nav 下的 div 下的 span
   - xpath: "//*[@id=\"app\"]/div/div/div[1]/nav/div/div/span"  # 完整 xpath
-  - text: "极客公园"  # 特定账号名称（可根据实际账号修改）
+  - text: "账号名称"  # 特定账号名称（可根据实际账号修改）
 
 # -------------------- 未登录态验证 --------------------
 # 验证未登录状态的元素（Cookie失效时页面独有的元素）

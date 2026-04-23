@@ -41,6 +41,11 @@ from playwright_stealth import Stealth
 from loguru import logger
 
 
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "微博"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
+
 # ============================================================
 # 1. 配置加载模块
 # ============================================================
@@ -867,7 +872,7 @@ class ArticleListExtractor:
             article_data = {
                 'publish_time': publish_time,      # 发布日期 YYYY-MM-DD
                 'title': title,                     # 文章标题
-                'platform': '极客公园微博',          # 平台名称
+                'platform': '微博',          # 平台名称
                 'url': article_info.get('url', ''), # 文章URL
                 'exposure': '/',                    # 曝光数 (微博无此字段)
                 'read': article_info.get('read_count', '0'),  # 阅读数
@@ -937,7 +942,7 @@ class ArticleListExtractor:
             article_data = {
                 'publish_time': publish_time,
                 'title': title,
-                'platform': '极客公园微博',
+                'platform': '微博',
                 'url': '',
                 'exposure': '/',
                 'read': read_count,
@@ -1131,7 +1136,7 @@ async def crawl(
 
         # 处理结果
         for data in extracted:
-            data['platform'] = "极客公园微博"
+            data['platform'] = "微博"
             data['crawl_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             success_data.append(data)
             if result_callback:

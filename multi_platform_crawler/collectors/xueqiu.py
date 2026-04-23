@@ -48,6 +48,11 @@ from playwright.async_api import async_playwright, Playwright, TimeoutError as P
 from playwright_stealth import Stealth
 from loguru import logger
 
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "雪球"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
+
 # 设置控制台输出编码
 if sys.platform == 'win32':
     import io
@@ -288,7 +293,7 @@ class LoginManager:
         2. 等待页面完全加载（需要2-3秒让数据渲染）
         3. 检查右上角文字：
            - 显示「未登录」→ Cookie 失效，返回 False
-           - 显示账号名称（如「极客公园」）→ Cookie 有效，继续验证
+           - 显示账号名称（如「{ACCOUNT_NICKNAME}」）→ Cookie 有效，继续验证
         4. 检查文章列表：
            - 显示「暂无数据」且「共0条」 → 可能是真正无数据，也可能登录态异常
            - 有文章数据 → 登录成功，返回 True
@@ -387,7 +392,7 @@ class LoginManager:
                     logger.warning("⚠️ 检测到「未登录」，Cookie 失效")
                     return False
 
-                # 显示账号名称（如「极客公园」），登录态有效
+                # 显示账号名称（如「{ACCOUNT_NICKNAME}」），登录态有效
                 logger.success(f"✅ 检测到账号名称: {user_name_text}")
             else:
                 logger.warning("⚠️ 未找到用户名元素，可能登录态异常")
@@ -411,7 +416,7 @@ class LoginManager:
                         logger.warning(f"⚠️ 显示「暂无数据」且「共0条」，可能是未登录")
                         # 但右上角已显示账号名称，所以可能是真正无数据
                         # 根据任务要求，右上角显示账号名称即为登录成功
-                        logger.info("✅ 虽然无数据，但登录态有效（右上角显示账号名称）")
+                        logger.info(f"✅ 虽然无数据，但登录态有效（右上角显示 {ACCOUNT_NICKNAME}）")
 
                 # 检查是否有文章数据行
                 data_rows = page.locator("tbody tr")
@@ -436,7 +441,7 @@ class LoginManager:
 
     async def _check_login_status_on_current_page(self, page) -> bool:
         """
-        轻量级登录状态检查：在当前页面（不导航）检查右上角是否显示账号名称（非「未登录」）。
+        轻量级登录状态检查：在当前页面（不导航）检查右上角是否显示 {ACCOUNT_NICKNAME}（非「未登录」）。
         用于手动登录等待中的轮询，避免刷新页面打断用户操作。
         """
         try:
@@ -577,7 +582,7 @@ class LoginManager:
         3. 切换到二维码登录模式
         4. 点击「微信登录」按钮
         5. 等待用户扫码完成
-        6. 验证登录成功（右上角显示账号名称）
+        6. 验证登录成功（右上角显示 {ACCOUNT_NICKNAME}）
         7. 保存 Cookie
 
         Args:
@@ -708,7 +713,7 @@ class LoginManager:
             logger.info("💡 请使用微信扫描页面上的二维码完成登录")
             logger.info("📌 程序将每30秒检查一次登录态，最长等待5分钟")
 
-            # 等待登录成功的标志（右上角显示账号名称）
+            # 等待登录成功的标志（右上角显示 {ACCOUNT_NICKNAME}）
             max_wait_seconds = 300  # 5分钟
             check_interval = 30      # 每30秒检查一次
             waited_seconds = 0
@@ -742,7 +747,7 @@ class LoginManager:
         验证登录是否成功（辅助方法）
 
         验证逻辑：
-        - 检查右上角是否显示账号名称（非「未登录」）
+        - 检查右上角是否显示 {ACCOUNT_NICKNAME}（非「未登录」）
         - 可选：检查是否有登录态标志元素
 
         Args:
@@ -1317,7 +1322,7 @@ class CSVExporter:
                 standardized_articles.append({
                     "publish_time": "",  # 雪球数据后台不显示发布时间
                     "title": article.get("title", ""),
-                    "platform": "极客公园雪球号",
+                    "platform": "雪球",
                     "url": article.get("url", ""),
                     "exposure": "/",  # 雪球不提供曝光量
                     "read": article.get("read_count", 0),
@@ -1427,7 +1432,7 @@ async def crawl(
 
         # 处理结果
         for data in extracted:
-            data['platform'] = "极客公园雪球号"
+            data['platform'] = "雪球"
             data['crawl_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             success_data.append(data)
             if result_callback:

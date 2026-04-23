@@ -34,6 +34,11 @@ from playwright.async_api import async_playwright, Playwright, TimeoutError as P
 from playwright_stealth import Stealth  # 仅导入 Stealth 类
 from loguru import logger  # loguru日志
 
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "ZAKER"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
+
 # ==================== 1. 配置加载模块 ====================
 class ConfigLoader:
     """加载平台配置（YAML），提供点号路径访问方法"""
@@ -74,7 +79,7 @@ class ConfigLoader:
         logger.info("🔍 开始验证配置文件...")
         required_sections = {
             'login': ['username_selectors', 'password_selectors', 'login_button_selectors'],
-            'navigation': ['content_management_selectors', 'geek_park_selectors'],
+            'navigation': ['content_management_selectors', 'account_name_selectors'],
             'article_list': ['iframe_selectors', 'table_selectors', 'row_selectors', 'field_selectors']
         }
 
@@ -623,16 +628,16 @@ class CSVExporter:
 
 # ==================== 4. 导航管理模块 ====================
 class NavigationManager:
-    """管理侧边栏导航：内容管理 → 极客公园"""
+    """管理侧边栏导航：内容管理 → {ACCOUNT_NICKNAME}"""
 
     def __init__(self, config: ConfigLoader):
         self.config = config
 
     async def navigate_to_article_list(self, page) -> bool:
         """
-        侧边栏导航：检测侧边栏元素 → 点击内容管理 → 点击极客公园
+        侧边栏导航：检测侧边栏元素 → 点击内容管理 → 点击 {ACCOUNT_NICKNAME}
         第一步：登录后检测侧边栏核心元素（优先校验「内容管理」）
-        第二步：点击「内容管理」后，精准检测其子菜单（极客公园），检测成功后直接点击「极客公园」
+        第二步：点击「内容管理」后，精准检测其子菜单（{ACCOUNT_NICKNAME}），检测成功后直接点击「{ACCOUNT_NICKNAME}」
         """
         try:
             logger.info("🧭 开始侧边栏导航...")
@@ -643,7 +648,7 @@ class NavigationManager:
 
             # 从配置获取选择器
             content_selectors = self.config.get("navigation.content_management_selectors")
-            geek_park_selectors = self.config.get("navigation.geek_park_selectors")
+            account_name_selectors = self.config.get("navigation.account_name_selectors")
 
             # ===== 第一步：检测侧边栏核心元素（优先「内容管理」）=====
             logger.info("📋 第一步：检测侧边栏核心元素...")
@@ -673,42 +678,42 @@ class NavigationManager:
             if not content_locator:
                 raise RuntimeError("❌ 侧边栏核心元素检测失败")
 
-            # ===== 第二步：点击「内容管理」并检测子菜单「极客公园」=====
+            # ===== 第二步：点击「内容管理」并检测子菜单「{ACCOUNT_NICKNAME}」=====
             logger.info("📋 第二步：点击「内容管理」并检测子菜单...")
 
             # 点击「内容管理」展开子菜单
             await content_locator.click()
             logger.success("✅ 已点击「内容管理」一级菜单")
 
-            # 检测子菜单「极客公园」
+            # 检测子菜单「{ACCOUNT_NICKNAME}」
             submenu_locator = None
-            for selector in geek_park_selectors:
+            for selector in account_name_selectors:
                 try:
                     if "css" in selector:
                         submenu_locator = page.locator(selector["css"])
                         await submenu_locator.wait_for(state="visible", timeout=timeout)
-                        logger.success(f"✅ 子菜单「极客公园」检测成功（CSS定位）")
+                        logger.success(f"✅ 子菜单「{ACCOUNT_NICKNAME}」检测成功（CSS定位）")
                         break
                     elif "role" in selector:
                         submenu_locator = page.get_by_role(selector["role"], name=selector["name"])
                         await submenu_locator.wait_for(state="visible", timeout=timeout)
-                        logger.success(f"✅ 子菜单「极客公园」检测成功（语义化定位）")
+                        logger.success(f"✅ 子菜单「{ACCOUNT_NICKNAME}」检测成功（语义化定位）")
                         break
                     elif "xpath" in selector:
                         submenu_locator = page.locator(selector["xpath"])
                         await submenu_locator.wait_for(state="visible", timeout=timeout)
-                        logger.success(f"✅ 子菜单「极客公园」检测成功（XPath定位）")
+                        logger.success(f"✅ 子菜单「{ACCOUNT_NICKNAME}」检测成功（XPath定位）")
                         break
                 except Exception as e:
                     logger.warning(f"⚠️ 子菜单定位失败: {selector} - {e}")
                     continue
 
             if not submenu_locator:
-                raise RuntimeError("❌ 子菜单「极客公园」检测失败")
+                raise RuntimeError(f"❌ 子菜单「{ACCOUNT_NICKNAME}」检测失败")
 
-            # 点击「极客公园」进入文章列表
+            # 点击「{ACCOUNT_NICKNAME}」进入文章列表
             await submenu_locator.click()
-            logger.success("✅ 已点击「极客公园」二级菜单")
+            logger.success(f"✅ 已点击「{ACCOUNT_NICKNAME}」二级菜单")
 
             # 等待页面网络请求完成
             logger.info("⏳ 等待页面网络请求完成...")
@@ -757,7 +762,7 @@ class NavigationManager:
 
             # 额外等待：确保表格行完全渲染
             await asyncio.sleep(1)
-            logger.success("✅ 侧边栏导航完成，已进入「极客公园」文章列表")
+            logger.success(f"✅ 侧边栏导航完成，已进入「{ACCOUNT_NICKNAME}」文章列表")
             return True
 
         except Exception as e:
@@ -1041,7 +1046,7 @@ class ArticleListExtractor:
 
         # 3. 提取数据（标准9字段，数据字典统一使用publish_time）
         article_data = {
-            "platform": "极客公园ZAKER号",
+            "platform": "ZAKER",
             "title": current_title,
             "url": "",
             "publish_time": "",  # 统一使用 publish_time（选择器 td[field="addtime"] 保持不变）
@@ -1152,7 +1157,7 @@ async def run(p: Playwright, headless: bool = False) -> None:
                 logger.info("🗑️ 已删除失效的登录态文件")
             return
 
-        # ===== 侧边栏导航：内容管理 → 极客公园 =====
+        # ===== 侧边栏导航：内容管理 → {ACCOUNT_NICKNAME} ===== 
         if not await nav_mgr.navigate_to_article_list(page):
             logger.error("❌ 导航失败，程序终止")
             return
@@ -1303,7 +1308,7 @@ async def crawl(
         # 处理结果
         for data in extracted:
             # 添加平台和时间戳
-            data['platform'] = "极客公园ZAKER号"
+            data['platform'] = "ZAKER"
             data['crawl_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             success_data.append(data)

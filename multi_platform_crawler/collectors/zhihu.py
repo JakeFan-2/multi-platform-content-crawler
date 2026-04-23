@@ -53,6 +53,11 @@ from playwright_stealth import Stealth
 from loguru import logger
 
 
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "知乎"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
+
 # ============================================================
 # 1. 配置加载模块
 # ============================================================
@@ -871,7 +876,7 @@ class CSVExporter:
                     row = {
                         'publish_time': article.get('publish_time', ''),
                         'title': article.get('title', ''),
-                        'platform': '极客公园知乎号',  # 知乎号固定值
+                        'platform': '知乎',  # 知乎固定值
                         'url': article.get('url', ''),
                         'exposure': '/',               # 固定填充
                         'read': article.get('read_count', ''),
@@ -970,7 +975,7 @@ async def crawl(
 
         # 处理结果
         for data in extracted:
-            data['platform'] = "极客公园知乎号"
+            data['platform'] = "知乎"
             data['crawl_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             success_data.append(data)
             if result_callback:

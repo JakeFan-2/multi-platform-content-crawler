@@ -34,6 +34,11 @@ from playwright_stealth import Stealth
 from loguru import logger
 
 
+# ===================== 平台配置项（请勿修改逻辑，仅修改参数） =====================
+PLATFORM_NAME = "企鹅号"  # 平台名称（页面定位用）
+ACCOUNT_NICKNAME = "账号名称"  # 账号昵称（侧边栏/页面判断用，替换原硬编码字符）
+# ==============================================================================
+
 # ============================================================
 # 1. 配置加载模块
 # ============================================================
@@ -708,7 +713,7 @@ class ArticleListExtractor:
                         'publish_time': publish_time,
                         'read': read_count,
                         'comment': comment_count,
-                        'platform': '极客公园企鹅号',
+                        'platform': '企鹅号',
                         'exposure': '/',
                         'recommend': '/',
                         'like': '/',
@@ -902,7 +907,7 @@ async def crawl(
             # 数据已经在_extract_page_articles中设置了完整字段
             # 这里只做确认，不覆盖
             if 'platform' not in data:
-                data['platform'] = '极客公园企鹅号'
+                data['platform'] = '企鹅号'
             success_data.append(data)
             if result_callback:
                 result_callback(data)

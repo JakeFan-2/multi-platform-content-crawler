@@ -238,7 +238,7 @@ pagination:
 # -------------------- 字段映射说明 --------------------
 # 标准字段 -> 微信公众号字段对应关系
 field_mapping:
-  platform: "极客公园微信"  # 固定值
+  platform: "微信"  # 固定值
   publish_time: "publish_time"  # 发布时间
   title: "title"  # 文章标题（用户提供）
   url: "url"  # 文章链接
