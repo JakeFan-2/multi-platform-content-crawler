@@ -45,94 +45,86 @@
 该图展示从用户交互到底层存储的完整技术分层，标明了各层核心模块及关键通信方式。
 
 ```mermaid
-flowchart TB 
-    %% 定义四大层级 
-    subgraph 表现层 
-        direction TB 
-        GUI[PySide6 主界面<br/>启动方式：python main.py] 
-        GUI_Components[核心组件：<br/>平台选择/标题输入/手动登录/实时日志/数据表格/工具模块] 
-    end 
+flowchart TB
+    subgraph 表现层
+        direction TB
+        GUI[PySide6 主界面<br/>启动方式：python main.py]
+        GUI_Components[核心组件]
+    end
 
-    subgraph 调度采集层 
-        direction TB 
-        Thread[CrawlThread<br/>QThread + asyncio] 
-        Scheduler[CrawlScheduler<br/>调度中心：FIFO串行调度/双模式登录控制/数据归一化] 
-        Collector[平台采集器<br/>10个稳定平台，均继承BaseCollector] 
-        Collector_Modules[采集器内部模块：<br/>ConfigLoader/AntiSpiderHelper/RetryManager/LoginManager/NavigationManager/TitleMatcher/ArticleListExtractor] 
-    end 
+    subgraph 调度采集层
+        direction TB
+        Thread[CrawlThread<br/>QThread + asyncio]
+        Scheduler[CrawlScheduler<br/>调度中心]
+        Collector[平台采集器<br/>10个平台]
+        Collector_Modules[采集器内部模块]
+    end
 
-    subgraph 工具层 
-        direction TB 
-        Registry[PlatformRegistry<br/>平台注册与查询 (单例)] 
-        Matcher[TitleMatcher<br/>三级标题匹配算法] 
-        Security[加密模块<br/>Fernet + AES] 
-        Feishu[飞书导入<br/>独立QThread工作线程] 
-        Exposure[ExposureLoader<br/>静态曝光量加载器 (单例)] 
-        Ops[Ops<br/>日志轮转/健康检查/快照清理] 
-    end 
+    subgraph 工具层
+        direction TB
+        Registry[PlatformRegistry<br/>平台注册与查询]
+        Matcher[TitleMatcher<br/>三级标题匹配]
+        Security[加密模块<br/>Fernet + AES]
+        Feishu[飞书导入]
+        Exposure[ExposureLoader<br/>曝光量加载]
+        Ops[Ops<br/>日志轮转]
+    end
 
-    subgraph 数据存储层 
-        direction TB 
-        YAML[platforms/*.yaml 配置<br/>选择器/URL/超时] 
-        ExposureConfig[config/exposure.yaml<br/>静态曝光量配置] 
-        Cookie[加密Cookie存储<br/>cookies/*.enc] 
-        CSV[CSV数据导出<br/>data/*.csv] 
-        Log[日志/快照<br/>logs/*.log / snapshots/] 
-        Key[.encryption.key<br/>Fernet对称加密密钥] 
-    end 
+    subgraph 数据存储层
+        direction TB
+        YAML[platforms/*.yaml<br/>配置文件]
+        ExposureConfig[config/exposure.yaml<br/>曝光量配置]
+        Cookie[cookies/*.enc<br/>加密Cookie]
+        CSV[data/*.csv<br/>CSV导出]
+        Log[logs/*.log<br/>日志快照]
+        Key[.encryption.key<br/>加密密钥]
+    end
 
-    %% 流程链路 
-    GUI --> Thread 
-    Thread --> Scheduler 
-    Scheduler --> Collector 
+    GUI --> Thread
+    Thread --> Scheduler
+    Scheduler --> Collector
     Collector --> Collector_Modules
-
-    %% 依赖关系 
-    Collector --> Registry 
-    Collector --> Matcher 
-    Collector --> Security 
-    Collector --> YAML 
-    Collector --> Cookie 
+    Collector --> Registry
+    Collector --> Matcher
+    Collector --> Security
+    Collector --> YAML
+    Collector --> Cookie
     Scheduler --> Exposure
+    Scheduler --> Feishu
+    Scheduler --> CSV
+    Scheduler --> Log
 
-    %% 输出模块（平行独立，无依赖） 
-    Scheduler --> Feishu 
-    Scheduler --> CSV 
-    Scheduler --> Log 
-
-    %% 专业配色 
-    style 表现层 fill:#e6f7ff,stroke:#1890ff,stroke-width:2px 
-    style 调度采集层 fill:#f0f2ff,stroke:#597ef7,stroke-width:2px 
-    style 工具层 fill:#f6ffed,stroke:#52c41a,stroke-width:2px 
-    style 数据存储层 fill:#fff7e6,stroke:#faad14,stroke-width:2px 
+    style 表现层 fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
+    style 调度采集层 fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
+    style 工具层 fill:#f6ffed,stroke:#52c41a,stroke-width:2px
+    style 数据存储层 fill:#fff7e6,stroke:#faad14,stroke-width:2px
 ```
 
 ### 2. GUI 界面架构图（区域布局与信号连接）
 为你梳理了一份综合性 GUI 架构图，它融合了所有区域、控件以及跨线程的信号连接关系，便于开发与 AI 精确解析。
 
 ```mermaid
-flowchart TD 
-    subgraph GUI[Qt 主界面 - QScrollArea 垂直滚动]
-        direction TB 
-        A1[1. 平台选择模块<br/>10个平台复选框 + 全选/全不选] 
-        A2[2. 标题/关键词输入<br/>最多5条标题 + 动态关键词槽] 
-        A3[3. 执行控制<br/>启动/暂停/停止 + 状态显示] 
-        A4[4. 手动登录平台<br/>自动登录失败队列 + 手动登录采集按钮] 
-        A5[5. 手动登录采集模块<br/>10平台列表 + 手动登录并采集按钮] 
-        A6[6. 实时日志展示<br/>QTextBrowser + 跨线程log_signal] 
-        A7[7. 采集结果表格<br/>QTableWidget + 11标准字段 + 未匹配标题列表] 
-        A8[8. 工具模块<br/>导出CSV + 导入飞书 + 清空数据] 
+flowchart TD
+    subgraph GUI[Qt 主界面]
+        direction TB
+        A1[1. 平台选择模块<br/>10个平台复选框]
+        A2[2. 标题/关键词输入<br/>最多5条标题]
+        A3[3. 执行控制<br/>启动/暂停/停止]
+        A4[4. 手动登录平台<br/>登录失败队列]
+        A5[5. 手动登录采集模块<br/>有头浏览器模式]
+        A6[6. 实时日志展示<br/>QTextBrowser]
+        A7[7. 采集结果表格<br/>11标准字段]
+        A8[8. 工具模块<br/>CSV导出/飞书导入]
     end
 
     subgraph Signals[信号连接]
         direction TB
-        S1[主线程信号 → 子线程槽<br/>start_signal(platforms, titles, keywords)<br/>manual_login_signal(platform_id)]
-        S2[子线程信号 → 主线程槽<br/>log_signal(str) → QTextBrowser<br/>data_signal(dict) → QTableWidget<br/>login_required_signal(platform) → 区域4<br/>finish_signal → 刷新状态/汇总日志]
+        S1[主线程信号<br/>start_signal<br/>manual_login_signal]
+        S2[子线程信号<br/>log_signal<br/>data_signal<br/>login_required_signal<br/>finish_signal]
     end
 
     GUI --> Signals
 
-    %% 配色
     style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px
     style A1 fill:#ffffff,stroke:#333
     style A2 fill:#ffffff,stroke:#333
@@ -146,27 +138,25 @@ flowchart TD
 ```
 
 ### 3. 项目核心执行流程图
-清晰展示从调度到采集、数据回传的完整逻辑链，包含手动登录两条路径（区域4→手动登录采集、区域5→直接手动采集）。
+清晰展示从调度到采集、数据回传的完整逻辑链，包含手动登录两条路径。
 
 ```mermaid
 flowchart TD
-    A[用户操作] -->|start_signal| B[CrawlThread (子线程)]
-    A -->|manual_login_signal| C[CrawlScheduler.run()]
+    A[用户操作] --> B[CrawlThread]
+    A --> C[CrawlScheduler]
     B --> C
-    C -->|遍历 platform_queue| D[execute_platform (自动无头)]
-    C -->|登录失败| E[手动登录队列]
-    E -->|用户点击[手动登录采集]| F[execute_manual_crawl (有头)]
-    A -->|区域5[手动登录并采集]| F
+    C --> D[execute_platform<br/>自动无头]
+    C --> E[手动登录队列]
+    E --> F[execute_manual_crawl<br/>有头浏览器]
     D --> G[BaseCollector]
     F --> G
-    G -->|ensure_login()| H[crawl()]
-    H -->|result_callback| I[data_signal / log_signal]
-    I --> J[GUI 主线程更新]
-    J -->|表格追加| K[数据展示]
-    J -->|日志输出| L[日志展示]
-    J -->|飞书导入| M[飞书数据]
+    G --> H[crawl]
+    H --> I[data_signal<br/>log_signal]
+    I --> J[GUI主线程更新]
+    J --> K[数据展示]
+    J --> L[日志展示]
+    J --> M[飞书导入]
 
-    %% 专业配色
     style A fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
     style B fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
     style C fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
