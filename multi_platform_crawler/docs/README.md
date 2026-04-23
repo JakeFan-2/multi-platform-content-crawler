@@ -45,7 +45,7 @@
 该图展示从用户交互到底层存储的完整技术分层，标明了各层核心模块及关键通信方式。
 
 ```mermaid
-flowchart TB
+flowchart TD
     %% ===================== 表现层 =====================
     subgraph UI[表现层 · Qt 主线程]
         direction TB
@@ -56,17 +56,14 @@ flowchart TB
         TABLE[数据表格 QTableWidget]
     end
 
-    %% 增加纵向间距
-    UI ---> THREAD_BOUNDARY
-
+    %% 增加纵向距离
+    
     %% ===================== 线程边界 =====================
-    THREAD_BOUNDARY[线程边界]
     SIGNAL_START --> THREAD
     SIGNAL_MANUAL --> THREAD
 
-    %% 增加纵向间距
-    THREAD_BOUNDARY ---> THREAD
-
+    %% 增加纵向距离
+    
     %% ===================== 调度层 =====================
     subgraph THREAD[采集子线程 · QThread + asyncio]
         direction TB
@@ -77,9 +74,8 @@ flowchart TB
         Scheduler -->|手动模式| MANUAL_EXEC[execute_manual_crawl()]
     end
 
-    %% 增加纵向间距
-    THREAD ---> COLLECTORS
-
+    %% 增加纵向距离
+    
     %% ===================== 采集器 =====================
     subgraph COLLECTORS[采集器层 collectors/]
         direction TB
@@ -95,12 +91,13 @@ flowchart TB
         Base --> Match
     end
 
+    %% 增加纵向距离
+    
     EXECUTE --> Loader
     Loader --> Base
 
-    %% 增加纵向间距
-    COLLECTORS ---> UTILS
-
+    %% 增加纵向距离
+    
     %% ===================== 工具层 =====================
     subgraph UTILS[工具层 utils/]
         direction TB
@@ -111,14 +108,15 @@ flowchart TB
         Security[SecureStorage]
     end
 
+    %% 增加纵向距离
+    
     Scheduler --> Registry
     Scheduler --> Model
     Scheduler --> Exposure
     Scheduler --> Feishu
 
-    %% 增加纵向间距
-    UTILS ---> STORAGE
-
+    %% 增加纵向距离
+    
     %% ===================== 存储层 =====================
     subgraph STORAGE[数据存储层]
         direction TB
@@ -130,6 +128,8 @@ flowchart TB
         SNAP[snapshots/]
     end
 
+    %% 增加纵向距离
+    
     Login --> COOKIE
     Scheduler --> CSV
     Scheduler --> LOG
@@ -137,11 +137,9 @@ flowchart TB
     Exposure --> EXP
     Loader --> YAML
 
-    %% 增加纵向间距
-    STORAGE ---> GUI_FLOW
-
+    %% 增加纵向距离
+    
     %% ===================== 回流 GUI =====================
-    GUI_FLOW[数据回流]
     Scheduler -->|data_signal| TABLE
     Scheduler -->|log_signal| THREAD_LOG
     Scheduler -->|login_required| GUI
@@ -152,79 +150,61 @@ flowchart TB
     style COLLECTORS fill:#fff1eb,stroke:#fa8c16,stroke-width:2px
     style UTILS fill:#f6ffed,stroke:#52c41a,stroke-width:2px
     style STORAGE fill:#fff7e6,stroke:#faad14,stroke-width:2px
-    style THREAD_BOUNDARY fill:#ffffff,stroke:#ffffff,stroke-width:0px
-    style GUI_FLOW fill:#ffffff,stroke:#ffffff,stroke-width:0px
 ```
 
 ### 2. GUI 架构图
 为你梳理了一份综合性 GUI 架构图，它融合了所有区域、控件以及跨线程的信号连接关系，便于开发与 AI 精确解析。
 
 ```mermaid
-flowchart TB
-    %% 数据回流模块放在主模块上方
+flowchart TD
+    %% 信号节点放在主模块上方
     THREAD_LOG[log_signal]
     THREAD_DATA[data_signal]
     THREAD_LOGIN[login_required_signal]
     
-    %% 增加纵向间距
-    THREAD_LOG ---> GUI
-    THREAD_DATA ---> GUI
-    THREAD_LOGIN ---> GUI
-
     subgraph GUI[MainWindow · QScrollArea]
         direction TB
 
         %% 区域1
         P1[区域1 平台选择\n- 10平台复选框\n- 全选/全不选]
-        
-        %% 增加纵向间距
-        P1 ---> P2
 
+        %% 增加纵向距离
+        
         %% 区域2
         P2[区域2 标题输入\n- 最多5条\n- 动态关键词槽]
-        
-        %% 增加纵向间距
-        P2 ---> P3
 
+        %% 增加纵向距离
+        
         %% 区域3
         P3[区域3 执行控制\n- 启动 / 暂停 / 停止]
-        
-        %% 增加纵向间距
-        P3 ---> P4
 
+        %% 增加纵向距离
+        
         %% 区域4
         P4[区域4 自动登录失败队列\n- QListWidget\n- 手动登录采集按钮]
-        
-        %% 增加纵向间距
-        P4 ---> P5
 
+        %% 增加纵向距离
+        
         %% 区域5
         P5[区域5 手动登录并采集\n- 平台列表\n- 手动登录按钮]
-        
-        %% 增加纵向间距
-        P5 ---> P6
 
+        %% 增加纵向距离
+        
         %% 区域6
         P6[区域6 实时日志\nQTextBrowser]
-        
-        %% 增加纵向间距
-        P6 ---> P7
 
+        %% 增加纵向距离
+        
         %% 区域7
         P7[区域7 数据结果\nQTableWidget]
-        
-        %% 增加纵向间距
-        P7 ---> P8
 
+        %% 增加纵向距离
+        
         %% 区域8
         P8[区域8 工具\n- 导出CSV\n- 导入飞书\n- 清空数据]
     end
 
-    %% 增加纵向间距
-    GUI ---> SIGNAL_FLOW
-
     %% ================= 用户操作流 =================
-    SIGNAL_FLOW[用户操作流]
     P1 --> P3
     P2 --> P3
 
@@ -239,20 +219,19 @@ flowchart TB
 
     %% 颜色样式
     style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px
-    style P1 fill:#e6f7ff,stroke:#1890ff,font-weight:bold,color:#000000
-    style P2 fill:#e6f7ff,stroke:#1890ff,font-weight:bold,color:#000000
-    style P3 fill:#f0f2ff,stroke:#597ef7,font-weight:bold,color:#000000
-    style P4 fill:#fff1eb,stroke:#fa8c16,font-weight:bold,color:#000000
-    style P5 fill:#fff1eb,stroke:#fa8c16,font-weight:bold,color:#000000
-    style P6 fill:#f6ffed,stroke:#52c41a,font-weight:bold,color:#000000
-    style P7 fill:#f6ffed,stroke:#52c41a,font-weight:bold,color:#000000
-    style P8 fill:#fff7e6,stroke:#faad14,font-weight:bold,color:#000000
+    style P1 fill:#e6f7ff,stroke:#1890ff
+    style P2 fill:#e6f7ff,stroke:#1890ff
+    style P3 fill:#f0f2ff,stroke:#597ef7
+    style P4 fill:#fff1eb,stroke:#fa8c16
+    style P5 fill:#fff1eb,stroke:#fa8c16
+    style P6 fill:#f6ffed,stroke:#52c41a
+    style P7 fill:#f6ffed,stroke:#52c41a
+    style P8 fill:#fff7e6,stroke:#faad14
     style SIGNAL_START fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
     style SIGNAL_MANUAL fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
     style THREAD_LOG fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
     style THREAD_DATA fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
     style THREAD_LOGIN fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
-    style SIGNAL_FLOW fill:#ffffff,stroke:#ffffff,stroke-width:0px
 ```
 
 ### 3. 项目核心执行流程图
