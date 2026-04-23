@@ -49,39 +49,39 @@ flowchart TB
     %% 定义四大层级 
     subgraph 表现层
         direction TB 
-        GUI[PySide6 主界面<br/>启动方式：python main.py] 
-        GUI_Components[核心组件：<br/>平台选择模块 (10个复选框 + 全选/全不选)<br/>标题/关键词输入模块 (5个标题槽 + 动态关键词槽)<br/>执行控制模块 (启动/暂停/停止)<br/>手动登录列表模块 (自动登录失败队列)<br/>手动登录采集模块 (10平台列表，三置顶)<br/>实时日志模块 (QTextBrowser)<br/>数据结果模块 (QTableWidget, 11标准字段)<br/>工具模块 (导出CSV, 导入飞书, 清空数据)] 
+        GUI[PySide6 主界面\n启动方式：python main.py] 
+        GUI_Components[核心组件：\n平台选择模块 (10个复选框 + 全选/全不选)\n标题/关键词输入模块 (5个标题槽 + 动态关键词槽)\n执行控制模块 (启动/暂停/停止)\n手动登录列表模块 (自动登录失败队列)\n手动登录采集模块 (10平台列表，三置顶)\n实时日志模块 (QTextBrowser)\n数据结果模块 (QTableWidget, 11标准字段)\n工具模块 (导出CSV, 导入飞书, 清空数据)] 
     end 
 
     subgraph 调度采集层
         direction TB 
-        Thread[CrawlThread<br/>QThread + asyncio 事件循环] 
-        Scheduler[CrawlScheduler<br/>调度中心：<br/>FIFO串行调度<br/>双模式登录控制<br/>浏览器模式控制<br/>标题/关键词校验<br/>策略一采集执行<br/>数据归一化<br/>异常处理 & 快照记录] 
-        Collector[平台采集器<br/>10个稳定平台，均继承BaseCollector] 
-        Collector_Modules[采集器内部模块：<br/>ConfigLoader (加载platforms/{platform}.yaml)<br/>AntiSpiderHelper (随机UA, 人类输入模拟)<br/>RetryManager (可重试异常自动重试)<br/>LoginManager (Cookie管理, 自动/手动登录)<br/>NavigationManager (导航到文章列表页)<br/>TitleMatcher (三级标题匹配算法)<br/>ArticleListExtractor (策略一提取, 翻页控制)<br/>CSVExporter (数据导出)] 
+        Thread[CrawlThread\nQThread + asyncio 事件循环] 
+        Scheduler[CrawlScheduler\n调度中心：\nFIFO串行调度\n双模式登录控制\n浏览器模式控制\n标题/关键词校验\n策略一采集执行\n数据归一化\n异常处理 & 快照记录] 
+        Collector[平台采集器\n10个稳定平台，均继承BaseCollector] 
+        Collector_Modules[采集器内部模块：\nConfigLoader (加载platforms/{platform}.yaml)\nAntiSpiderHelper (随机UA, 人类输入模拟)\nRetryManager (可重试异常自动重试)\nLoginManager (Cookie管理, 自动/手动登录)\nNavigationManager (导航到文章列表页)\nTitleMatcher (三级标题匹配算法)\nArticleListExtractor (策略一提取, 翻页控制)\nCSVExporter (数据导出)] 
     end 
 
     subgraph 工具层
         direction TB 
-        Registry[PlatformRegistry<br/>平台注册与查询 (单例)] 
-        DataModel[data_model<br/>11标准字段定义 + 字段映射] 
-        Matcher[TitleMatcher<br/>三级标题匹配算法 (精确/清理/标准化)] 
-        Security[加密模块<br/>Fernet + AES] 
-        Exposure[ExposureLoader<br/>静态曝光量加载器 (单例)] 
-        Ops[Ops<br/>日志轮转, 健康检查, 快照清理] 
-        FeishuWorker[FeishuImportWorker<br/>独立线程导入飞书] 
-        FeishuExporter[FeishuExporter<br/>飞书API封装 (批量添加记录)] 
+        Registry[PlatformRegistry\n平台注册与查询 (单例)] 
+        DataModel[data_model\n11标准字段定义 + 字段映射] 
+        Matcher[TitleMatcher\n三级标题匹配算法 (精确/清理/标准化)] 
+        Security[加密模块\nFernet + AES] 
+        Exposure[ExposureLoader\n静态曝光量加载器 (单例)] 
+        Ops[Ops\n日志轮转, 健康检查, 快照清理] 
+        FeishuWorker[FeishuImportWorker\n独立线程导入飞书] 
+        FeishuExporter[FeishuExporter\n飞书API封装 (批量添加记录)] 
     end 
 
     subgraph 数据存储层
         direction TB 
-        YAML[platforms/*.yaml<br/>平台配置文件 (选择器/URL/超时)] 
-        ExposureConfig[config/exposure.yaml<br/>静态曝光量配置 (11个平台，支持实时修改)] 
-        Key[.encryption.key<br/>Fernet对称加密密钥 (自动生成)] 
-        Cookie[cookies/*.enc<br/>AES加密的Cookie文件] 
-        CSV[data/*.csv<br/>导出的CSV数据 (UTF-8-BOM)] 
-        Log[logs/*.log<br/>loguru 日志 (按天轮转, 保留30天)] 
-        Snapshot[snapshots/{platform}_时间戳/<br/>异常快照 (截图+DOM+堆栈, 保留7天)] 
+        YAML[platforms/*.yaml\n平台配置文件 (选择器/URL/超时)] 
+        ExposureConfig[config/exposure.yaml\n静态曝光量配置 (11个平台，支持实时修改)] 
+        Key[.encryption.key\nFernet对称加密密钥 (自动生成)] 
+        Cookie[cookies/*.enc\nAES加密的Cookie文件] 
+        CSV[data/*.csv\n导出的CSV数据 (UTF-8-BOM)] 
+        Log[logs/*.log\nloguru 日志 (按天轮转, 保留30天)] 
+        Snapshot[snapshots/{platform}_时间戳/\n异常快照 (截图+DOM+堆栈, 保留7天)] 
     end 
 
     %% 流程链路 
@@ -118,20 +118,20 @@ flowchart TB
 flowchart TD 
     subgraph GUI[MainWindow - QScrollArea 垂直滚动]
         direction TB 
-        A1[区域1: 平台选择模块<br/>QGroupBox 1. 采集平台选择<br/>QCheckBox 列表 (10个稳定平台)<br/>QPushButton「全选」/「全不选」<br/>至少选中1个平台才启用「启动采集」] 
-        A2[区域2: 标题/关键词输入<br/>QGroupBox 2. 标题/关键词输入<br/>QLineEdit[] title_inputs[5] (最多5条标题)<br/>动态 QLineEdit (关键词)：当微博/头条被勾选 且 对应标题 >30 字时显示] 
-        A3[区域3: 执行控制<br/>QGroupBox 3. 执行控制<br/>QPushButton「启动采集」/「暂停」/「停止」<br/>QLabel 状态显示] 
-        A4[区域4: 手动登录平台<br/>QGroupBox 4. 手动登录平台 (可折叠)<br/>QListWidget manual_login_list (自动登录失败队列)<br/>QPushButton「手动登录采集」→ manual_login_signal(platform_id)] 
-        A5[区域5: 手动登录采集模块<br/>QGroupBox 手动登录采集模块 (可折叠，默认收起)<br/>QListWidget manual_collect_list (10平台；微信/企鹅/雪球置顶)<br/>QPushButton「手动登录并采集」(需至少1条主界面标题)<br/>与区域4共用 manual_login_signal] 
-        A6[区域6: 实时日志展示<br/>QGroupBox 5. 实时日志<br/>QTextBrowser<br/>由子线程 CrawlThread.log_signal 追加] 
-        A7[区域7: 采集结果表格<br/>QGroupBox 6. 采集数据结果<br/>QTableWidget (11列标准字段)<br/>未匹配标题列表] 
-        A8[区域8: 工具模块<br/>QGroupBox 7. 工具<br/>QPushButton「导出 CSV」(UTF‑8 BOM)<br/>QPushButton「导入飞书」<br/>QPushButton「清空数据」] 
+        A1[区域1: 平台选择模块\nQGroupBox 1. 采集平台选择\nQCheckBox 列表 (10个稳定平台)\nQPushButton「全选」/「全不选」\n至少选中1个平台才启用「启动采集」] 
+        A2[区域2: 标题/关键词输入\nQGroupBox 2. 标题/关键词输入\nQLineEdit[] title_inputs[5] (最多5条标题)\n动态 QLineEdit (关键词)：当微博/头条被勾选 且 对应标题 >30 字时显示] 
+        A3[区域3: 执行控制\nQGroupBox 3. 执行控制\nQPushButton「启动采集」/「暂停」/「停止」\nQLabel 状态显示] 
+        A4[区域4: 手动登录平台\nQGroupBox 4. 手动登录平台 (可折叠)\nQListWidget manual_login_list (自动登录失败队列)\nQPushButton「手动登录采集」→ manual_login_signal(platform_id)] 
+        A5[区域5: 手动登录采集模块\nQGroupBox 手动登录采集模块 (可折叠，默认收起)\nQListWidget manual_collect_list (10平台；微信/企鹅/雪球置顶)\nQPushButton「手动登录并采集」(需至少1条主界面标题)\n与区域4共用 manual_login_signal] 
+        A6[区域6: 实时日志展示\nQGroupBox 5. 实时日志\nQTextBrowser\n由子线程 CrawlThread.log_signal 追加] 
+        A7[区域7: 采集结果表格\nQGroupBox 6. 采集数据结果\nQTableWidget (11列标准字段)\n未匹配标题列表] 
+        A8[区域8: 工具模块\nQGroupBox 7. 工具\nQPushButton「导出 CSV」(UTF‑8 BOM)\nQPushButton「导入飞书」\nQPushButton「清空数据」] 
     end
 
     subgraph Signals[信号连接]
         direction TB
-        S1[主线程信号 → 子线程槽<br/>start_signal(platforms, titles, keywords)<br/>manual_login_signal(platform_id)]
-        S2[子线程信号 → 主线程槽<br/>log_signal(str) → QTextBrowser<br/>data_signal(dict) → QTableWidget<br/>login_required_signal(platform) → 区域4列表<br/>finish_signal → 刷新状态/汇总日志]
+        S1[主线程信号 → 子线程槽\nstart_signal(platforms, titles, keywords)\nmanual_login_signal(platform_id)]
+        S2[子线程信号 → 主线程槽\nlog_signal(str) → QTextBrowser\ndata_signal(dict) → QTableWidget\nlogin_required_signal(platform) → 区域4列表\nfinish_signal → 刷新状态/汇总日志]
     end
 
     GUI -->|Qt 信号/槽 (跨线程安全通信)| Signals
@@ -223,20 +223,20 @@ graph TD
 ```mermaid
 flowchart TB 
     Start[下载压缩包] --> Step1[解压到本地文件夹] 
-    Step1 --> Step2[阅读首次配置说明<br/>部署ms-playwright] 
-    Step2 --> Step3[重命名.env.example为.env<br/>填写密钥/账号] 
+    Step1 --> Step2[阅读首次配置说明\n部署ms-playwright] 
+    Step2 --> Step3[重命名.env.example为.env\n填写密钥/账号] 
     Step3 --> Step4[双击exe启动程序] 
     Step4 --> Step5[选择平台+输入文章标题] 
     Step5 --> Step6[点击启动采集] 
     Step6 --> Step7{自动登录成功?} 
     Step7 -->|是| Step8[继续自动采集] 
-    Step7 -->|否| Step9[自动登录失败<br/>平台进入手动登录队列] 
-    Step9 --> Step10[用户选择失败平台<br/>点击手动登录采集] 
+    Step7 -->|否| Step9[自动登录失败\n平台进入手动登录队列] 
+    Step9 --> Step10[用户选择失败平台\n点击手动登录采集] 
     Step10 --> Step11[启动有头浏览器] 
-    Step11 --> Step12[等待用户5分钟<br/>完成登录操作] 
+    Step11 --> Step12[等待用户5分钟\n完成登录操作] 
     Step12 --> Step13{登录成功?} 
     Step13 -->|是| Step14[继续采集] 
-    Step13 -->|否| Step15[登录超时<br/>请重新尝试] 
+    Step13 -->|否| Step15[登录超时\n请重新尝试] 
     Step14 --> Step16[数据汇总] 
     Step8 --> Step16 
     Step16 --> Step17{采集完成} 
