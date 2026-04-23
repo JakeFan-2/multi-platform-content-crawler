@@ -112,18 +112,18 @@ flowchart TD
         A6[5. 实时日志展示<br/>QTextBrowser] 
         A7[6. 采集结果表格<br/>11个标准字段] 
         A8[7. 工具模块<br/>CSV导出/飞书导入] 
-    end 
+    end
 
-    %% 配色 
-    style Qt 主界面 fill:#fef0f0,stroke:#f5222d,stroke-width:2px 
-    style A1 fill:#ffffff,stroke:#333 
-    style A2 fill:#ffffff,stroke:#333 
-    style A3 fill:#ffffff,stroke:#333 
-    style A4 fill:#ffffff,stroke:#333 
-    style A5 fill:#ffffff,stroke:#333 
-    style A6 fill:#ffffff,stroke:#333 
-    style A7 fill:#ffffff,stroke:#333 
-    style A8 fill:#ffffff,stroke:#333 
+    %% 配色
+    style Qt 主界面 fill:#fef0f0,stroke:#f5222d,stroke-width:2px
+    style A1 fill:#ffffff,stroke:#333
+    style A2 fill:#ffffff,stroke:#333
+    style A3 fill:#ffffff,stroke:#333
+    style A4 fill:#ffffff,stroke:#333
+    style A5 fill:#ffffff,stroke:#333
+    style A6 fill:#ffffff,stroke:#333
+    style A7 fill:#ffffff,stroke:#333
+    style A8 fill:#ffffff,stroke:#333
 ```
 
 ### 3. 打包后项目目录架构图
