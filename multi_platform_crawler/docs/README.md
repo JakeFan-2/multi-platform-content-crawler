@@ -206,7 +206,7 @@ flowchart TB
 1. 打开项目文件夹，双击 `MultiPlatformCrawler.exe` 文件
 2. 稍等 5~10 秒，会弹出交互界面
 
-![启动界面](docs/images/startup.png)
+![启动界面](images/startup.png)
 
 ### 2. 开始采集
 
@@ -216,13 +216,13 @@ flowchart TB
 4. **查看结果**：观察'未匹配标题'，分析是否需要补采
 5. **导出数据**：点击"导入飞书"或"导出 CSV"
 
-![采集界面](docs/images/collect.gif)
+![采集界面](images/collect.gif)
 
 ### 3. 关键词输入
 
 当选择了微博或头条平台，且输入的标题字符数大于 30 字时，会弹出关键词输入框。需要按照标题的关键词顺序输入，每个关键词之间空一个空格。
 
-![关键词输入](docs/images/keywords.gif)
+![关键词输入](images/keywords.gif)
 
 ### 4. 手动登录与补采
 
@@ -250,7 +250,7 @@ flowchart TB
   4. 系统以有头浏览器执行登录与采集（便于观察调试）
   5. 数据同样写入主数据表格
 
-![手动登录](docs/images/manual_login.png)
+![手动登录](images/manual_login.png)
 
 ### 5. 共同注意事项
 
@@ -264,7 +264,7 @@ flowchart TB
 - 采集到的数据会呈现到：6. 采集数据结果
 - 重点关注：未匹配标题，分析是否需要补采
 
-![数据结果](docs/images/results.png)
+![数据结果](images/results.png)
 
 ### 7. 导入飞书
 
