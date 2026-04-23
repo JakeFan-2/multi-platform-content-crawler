@@ -46,19 +46,19 @@
 ```mermaid
 flowchart TB 
     %% 定义四大层级 
-    subgraph 表现层 🎨 
+    subgraph 表现层 
         direction TB 
         GUI[PySide6 主界面<br/>启动方式：python main.py] 
     end 
 
-    subgraph 调度采集层 ⚙️ 
+    subgraph 调度采集层 
         direction TB 
         Thread[CrawlThread<br/>QThread + asyncio] 
         Scheduler[CrawlScheduler<br/>调度/登录/数据归一化] 
         Collector[平台采集器<br/>独立运行：修改DEBUG_TARGETS调试] 
     end 
 
-    subgraph 工具层 🛠️ 
+    subgraph 工具层 
         direction TB 
         Registry[PlatformRegistry] 
         Matcher[TitleMatcher] 
@@ -66,7 +66,7 @@ flowchart TB
         Feishu[飞书导入<br/>独立模块] 
     end 
 
-    subgraph 数据存储层 💾 
+    subgraph 数据存储层 
         direction TB 
         YAML[platforms/*.yaml 配置] 
         Cookie[加密Cookie存储] 
@@ -102,7 +102,7 @@ flowchart TB
 
 ```mermaid
 flowchart TD 
-    subgraph Qt 主界面 🖥️ 
+    subgraph Qt 主界面 
         direction TB 
         A1[1. 平台选择模块<br/>10个平台复选框] 
         A2[2. 标题/关键词输入<br/>最多5条标题] 
@@ -130,7 +130,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD 
-    subgraph 打包交付根目录 📦 
+    subgraph 打包交付根目录 
         direction TB 
         B1[MultiPlatformCrawler.exe<br/>主程序] 
         B2[.env.example<br/>配置模板] 
