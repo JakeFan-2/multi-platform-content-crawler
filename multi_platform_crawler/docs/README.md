@@ -47,13 +47,13 @@
 ```mermaid
 flowchart TB 
     %% 定义四大层级 
-    subgraph 表现层["表现层 · Qt 主线程"] 
+    subgraph 表现层
         direction TB 
         GUI[PySide6 主界面<br/>启动方式：python main.py] 
         GUI_Components[核心组件：<br/>平台选择模块 (10个复选框 + 全选/全不选)<br/>标题/关键词输入模块 (5个标题槽 + 动态关键词槽)<br/>执行控制模块 (启动/暂停/停止)<br/>手动登录列表模块 (自动登录失败队列)<br/>手动登录采集模块 (10平台列表，三置顶)<br/>实时日志模块 (QTextBrowser)<br/>数据结果模块 (QTableWidget, 11标准字段)<br/>工具模块 (导出CSV, 导入飞书, 清空数据)] 
     end 
 
-    subgraph 调度采集层["调度与采集层 · 独立子线程"] 
+    subgraph 调度采集层
         direction TB 
         Thread[CrawlThread<br/>QThread + asyncio 事件循环] 
         Scheduler[CrawlScheduler<br/>调度中心：<br/>FIFO串行调度<br/>双模式登录控制<br/>浏览器模式控制<br/>标题/关键词校验<br/>策略一采集执行<br/>数据归一化<br/>异常处理 & 快照记录] 
@@ -61,7 +61,7 @@ flowchart TB
         Collector_Modules[采集器内部模块：<br/>ConfigLoader (加载platforms/{platform}.yaml)<br/>AntiSpiderHelper (随机UA, 人类输入模拟)<br/>RetryManager (可重试异常自动重试)<br/>LoginManager (Cookie管理, 自动/手动登录)<br/>NavigationManager (导航到文章列表页)<br/>TitleMatcher (三级标题匹配算法)<br/>ArticleListExtractor (策略一提取, 翻页控制)<br/>CSVExporter (数据导出)] 
     end 
 
-    subgraph 工具层["工具层 · 线程安全"] 
+    subgraph 工具层
         direction TB 
         Registry[PlatformRegistry<br/>平台注册与查询 (单例)] 
         DataModel[data_model<br/>11标准字段定义 + 字段映射] 
@@ -73,7 +73,7 @@ flowchart TB
         FeishuExporter[FeishuExporter<br/>飞书API封装 (批量添加记录)] 
     end 
 
-    subgraph 数据存储层["数据存储层 · 本地文件系统"] 
+    subgraph 数据存储层
         direction TB 
         YAML[platforms/*.yaml<br/>平台配置文件 (选择器/URL/超时)] 
         ExposureConfig[config/exposure.yaml<br/>静态曝光量配置 (11个平台，支持实时修改)] 
@@ -118,14 +118,14 @@ flowchart TB
 flowchart TD 
     subgraph GUI[MainWindow - QScrollArea 垂直滚动]
         direction TB 
-        A1[区域1: 平台选择模块<br/>QGroupBox "1. 采集平台选择"<br/>QCheckBox 列表 (10个稳定平台)<br/>QPushButton「全选」/「全不选」<br/>至少选中1个平台才启用「启动采集」] 
-        A2[区域2: 标题/关键词输入<br/>QGroupBox "2. 标题/关键词输入"<br/>QLineEdit[] title_inputs[5] (最多5条标题)<br/>动态 QLineEdit (关键词)：当微博/头条被勾选 且 对应标题 >30 字时显示] 
-        A3[区域3: 执行控制<br/>QGroupBox "3. 执行控制"<br/>QPushButton「启动采集」/「暂停」/「停止」<br/>QLabel 状态显示] 
-        A4[区域4: 手动登录平台<br/>QGroupBox "4. 手动登录平台" (可折叠)<br/>QListWidget manual_login_list (自动登录失败队列)<br/>QPushButton「手动登录采集」→ manual_login_signal(platform_id)] 
-        A5[区域5: 手动登录采集模块<br/>QGroupBox "手动登录采集模块" (可折叠，默认收起)<br/>QListWidget manual_collect_list (10平台；微信/企鹅/雪球置顶)<br/>QPushButton「手动登录并采集」(需至少1条主界面标题)<br/>与区域4共用 manual_login_signal] 
-        A6[区域6: 实时日志展示<br/>QGroupBox "5. 实时日志"<br/>QTextBrowser<br/>由子线程 CrawlThread.log_signal 追加] 
-        A7[区域7: 采集结果表格<br/>QGroupBox "6. 采集数据结果"<br/>QTableWidget (11列标准字段)<br/>未匹配标题列表] 
-        A8[区域8: 工具模块<br/>QGroupBox "7. 工具"<br/>QPushButton「导出 CSV」(UTF‑8 BOM)<br/>QPushButton「导入飞书」<br/>QPushButton「清空数据」] 
+        A1[区域1: 平台选择模块<br/>QGroupBox 1. 采集平台选择<br/>QCheckBox 列表 (10个稳定平台)<br/>QPushButton「全选」/「全不选」<br/>至少选中1个平台才启用「启动采集」] 
+        A2[区域2: 标题/关键词输入<br/>QGroupBox 2. 标题/关键词输入<br/>QLineEdit[] title_inputs[5] (最多5条标题)<br/>动态 QLineEdit (关键词)：当微博/头条被勾选 且 对应标题 >30 字时显示] 
+        A3[区域3: 执行控制<br/>QGroupBox 3. 执行控制<br/>QPushButton「启动采集」/「暂停」/「停止」<br/>QLabel 状态显示] 
+        A4[区域4: 手动登录平台<br/>QGroupBox 4. 手动登录平台 (可折叠)<br/>QListWidget manual_login_list (自动登录失败队列)<br/>QPushButton「手动登录采集」→ manual_login_signal(platform_id)] 
+        A5[区域5: 手动登录采集模块<br/>QGroupBox 手动登录采集模块 (可折叠，默认收起)<br/>QListWidget manual_collect_list (10平台；微信/企鹅/雪球置顶)<br/>QPushButton「手动登录并采集」(需至少1条主界面标题)<br/>与区域4共用 manual_login_signal] 
+        A6[区域6: 实时日志展示<br/>QGroupBox 5. 实时日志<br/>QTextBrowser<br/>由子线程 CrawlThread.log_signal 追加] 
+        A7[区域7: 采集结果表格<br/>QGroupBox 6. 采集数据结果<br/>QTableWidget (11列标准字段)<br/>未匹配标题列表] 
+        A8[区域8: 工具模块<br/>QGroupBox 7. 工具<br/>QPushButton「导出 CSV」(UTF‑8 BOM)<br/>QPushButton「导入飞书」<br/>QPushButton「清空数据」] 
     end
 
     subgraph Signals[信号连接]
