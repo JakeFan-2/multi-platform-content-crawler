@@ -41,112 +41,162 @@
 
 ## 🏗️ 系统架构
 
-### 1. 系统总技术架构图（核心分层）
+### 1. 项目总体架构图（拉长 + 上色版・逻辑完全不变）
 该图展示从用户交互到底层存储的完整技术分层，标明了各层核心模块及关键通信方式。
 
 ```mermaid
 flowchart TB 
-    %% 定义四大层级 
-    subgraph 表现层
-        direction TB 
-        GUI[PySide6 主界面\n启动方式：python main.py] 
-        GUI_Components[核心组件：\n平台选择模块 (10个复选框 + 全选/全不选)\n标题/关键词输入模块 (5个标题槽 + 动态关键词槽)\n执行控制模块 (启动/暂停/停止)\n手动登录列表模块 (自动登录失败队列)\n手动登录采集模块 (10平台列表，三置顶)\n实时日志模块 (QTextBrowser)\n数据结果模块 (QTableWidget, 11标准字段)\n工具模块 (导出CSV, 导入飞书, 清空数据)] 
-    end 
 
-    subgraph 调度采集层
-        direction TB 
-        Thread[CrawlThread\nQThread + asyncio 事件循环] 
-        Scheduler[CrawlScheduler\n调度中心：\nFIFO串行调度\n双模式登录控制\n浏览器模式控制\n标题/关键词校验\n策略一采集执行\n数据归一化\n异常处理 & 快照记录] 
-        Collector[平台采集器\n10个稳定平台，均继承BaseCollector] 
-        Collector_Modules[采集器内部模块：\nConfigLoader (加载platforms/{platform}.yaml)\nAntiSpiderHelper (随机UA, 人类输入模拟)\nRetryManager (可重试异常自动重试)\nLoginManager (Cookie管理, 自动/手动登录)\nNavigationManager (导航到文章列表页)\nTitleMatcher (三级标题匹配算法)\nArticleListExtractor (策略一提取, 翻页控制)\nCSVExporter (数据导出)] 
-    end 
+ %% ===================== 表现层 ===================== 
+ subgraph UI[表现层 · Qt 主线程] 
+     direction TB 
+     GUI[MainWindow GUI] 
+     GUI -->|用户操作| SIGNAL_START[Signal: start_signal] 
+     GUI --> SIGNAL_MANUAL[Signal: manual_login_signal] 
+     THREAD_LOG[日志展示 QTextBrowser] 
+     TABLE[数据表格 QTableWidget] 
+ end 
 
-    subgraph 工具层
-        direction TB 
-        Registry[PlatformRegistry\n平台注册与查询 (单例)] 
-        DataModel[data_model\n11标准字段定义 + 字段映射] 
-        Matcher[TitleMatcher\n三级标题匹配算法 (精确/清理/标准化)] 
-        Security[加密模块\nFernet + AES] 
-        Exposure[ExposureLoader\n静态曝光量加载器 (单例)] 
-        Ops[Ops\n日志轮转, 健康检查, 快照清理] 
-        FeishuWorker[FeishuImportWorker\n独立线程导入飞书] 
-        FeishuExporter[FeishuExporter\n飞书API封装 (批量添加记录)] 
-    end 
+ %% ===================== 线程边界 ===================== 
+ SIGNAL_START --> THREAD 
+ SIGNAL_MANUAL --> THREAD 
 
-    subgraph 数据存储层
-        direction TB 
-        YAML[platforms/*.yaml\n平台配置文件 (选择器/URL/超时)] 
-        ExposureConfig[config/exposure.yaml\n静态曝光量配置 (11个平台，支持实时修改)] 
-        Key[.encryption.key\nFernet对称加密密钥 (自动生成)] 
-        Cookie[cookies/*.enc\nAES加密的Cookie文件] 
-        CSV[data/*.csv\n导出的CSV数据 (UTF-8-BOM)] 
-        Log[logs/*.log\nloguru 日志 (按天轮转, 保留30天)] 
-        Snapshot[snapshots/{platform}_时间戳/\n异常快照 (截图+DOM+堆栈, 保留7天)] 
-    end 
+ %% ===================== 调度层 ===================== 
+ subgraph THREAD[采集子线程 · QThread + asyncio] 
+     direction TB 
+     CrawlThread[CrawlThread] 
+     Scheduler[CrawlScheduler 调度中心] 
+     CrawlThread --> Scheduler 
+     Scheduler -->|FIFO调度| EXECUTE[execute_platform()] 
+     Scheduler -->|手动模式| MANUAL_EXEC[execute_manual_crawl()] 
+ end 
 
-    %% 流程链路 
-    GUI -->|Qt 信号/槽| Thread 
-    Thread --> Scheduler 
-    Scheduler -->|动态导入| Collector 
-    Collector --> Collector_Modules
+ %% ===================== 采集器 ===================== 
+ subgraph COLLECTORS[采集器层 collectors/] 
+     direction TB 
+     Loader[动态加载 collector] 
+     Base[BaseCollector 模板] 
+     Login[LoginManager] 
+     Nav[NavigationManager] 
+     Extract[ArticleListExtractor] 
+     Match[TitleMatcher] 
+     Base --> Login 
+     Base --> Nav 
+     Base --> Extract 
+     Base --> Match 
+ end 
 
-    %% 依赖关系 
-    Collector --> Registry 
-    Collector --> Matcher 
-    Collector --> Security 
-    Collector --> YAML 
-    Collector --> Cookie 
-    Scheduler --> Exposure
-    Scheduler --> FeishuWorker
-    FeishuWorker --> FeishuExporter
+ EXECUTE --> Loader 
+ Loader --> Base 
 
-    %% 输出模块（平行独立，无依赖） 
-    Scheduler --> CSV 
-    Scheduler --> Log 
+ %% ===================== 工具层 ===================== 
+ subgraph UTILS[工具层 utils/] 
+     direction TB 
+     Registry[PlatformRegistry] 
+     Model[DataModel 11字段] 
+     Exposure[ExposureLoader] 
+     Feishu[FeishuExporter] 
+     Security[SecureStorage] 
+ end 
 
-    %% 专业配色 
-    style 表现层 fill:#e6f7ff,stroke:#1890ff,stroke-width:2px 
-    style 调度采集层 fill:#f0f2ff,stroke:#597ef7,stroke-width:2px 
-    style 工具层 fill:#f6ffed,stroke:#52c41a,stroke-width:2px 
-    style 数据存储层 fill:#fff7e6,stroke:#faad14,stroke-width:2px 
+ Scheduler --> Registry 
+ Scheduler --> Model 
+ Scheduler --> Exposure 
+ Scheduler --> Feishu 
+
+ %% ===================== 存储层 ===================== 
+ subgraph STORAGE[数据存储层] 
+     direction TB 
+     YAML[platforms/*.yaml] 
+     EXP[config/exposure.yaml] 
+     COOKIE[cookies/*.enc] 
+     CSV[data/*.csv] 
+     LOG[logs/*.log] 
+     SNAP[snapshots/] 
+ end 
+
+ Login --> COOKIE 
+ Scheduler --> CSV 
+ Scheduler --> LOG 
+ Scheduler --> SNAP 
+ Exposure --> EXP 
+ Loader --> YAML 
+
+ %% ===================== 回流 GUI ===================== 
+ Scheduler -->|data_signal| TABLE 
+ Scheduler -->|log_signal| THREAD_LOG 
+ Scheduler -->|login_required| GUI 
+
+ %% 颜色样式 
+ style UI fill:#e6f7ff,stroke:#1890ff,stroke-width:2px 
+ style THREAD fill:#f0f2ff,stroke:#597ef7,stroke-width:2px 
+ style COLLECTORS fill:#fff1eb,stroke:#fa8c16,stroke-width:2px 
+ style UTILS fill:#f6ffed,stroke:#52c41a,stroke-width:2px 
+ style STORAGE fill:#fff7e6,stroke:#faad14,stroke-width:2px 
 ```
 
-### 2. GUI 界面架构图（区域布局与信号连接）
+### 2. GUI 架构图（拉长 + 上色版・逻辑完全不变）
 为你梳理了一份综合性 GUI 架构图，它融合了所有区域、控件以及跨线程的信号连接关系，便于开发与 AI 精确解析。
 
 ```mermaid
-flowchart TD 
-    subgraph GUI[MainWindow - QScrollArea 垂直滚动]
-        direction TB 
-        A1[区域1: 平台选择模块\nQGroupBox 1. 采集平台选择\nQCheckBox 列表 (10个稳定平台)\nQPushButton「全选」/「全不选」\n至少选中1个平台才启用「启动采集」] 
-        A2[区域2: 标题/关键词输入\nQGroupBox 2. 标题/关键词输入\nQLineEdit[] title_inputs[5] (最多5条标题)\n动态 QLineEdit (关键词)：当微博/头条被勾选 且 对应标题 >30 字时显示] 
-        A3[区域3: 执行控制\nQGroupBox 3. 执行控制\nQPushButton「启动采集」/「暂停」/「停止」\nQLabel 状态显示] 
-        A4[区域4: 手动登录平台\nQGroupBox 4. 手动登录平台 (可折叠)\nQListWidget manual_login_list (自动登录失败队列)\nQPushButton「手动登录采集」→ manual_login_signal(platform_id)] 
-        A5[区域5: 手动登录采集模块\nQGroupBox 手动登录采集模块 (可折叠，默认收起)\nQListWidget manual_collect_list (10平台；微信/企鹅/雪球置顶)\nQPushButton「手动登录并采集」(需至少1条主界面标题)\n与区域4共用 manual_login_signal] 
-        A6[区域6: 实时日志展示\nQGroupBox 5. 实时日志\nQTextBrowser\n由子线程 CrawlThread.log_signal 追加] 
-        A7[区域7: 采集结果表格\nQGroupBox 6. 采集数据结果\nQTableWidget (11列标准字段)\n未匹配标题列表] 
-        A8[区域8: 工具模块\nQGroupBox 7. 工具\nQPushButton「导出 CSV」(UTF‑8 BOM)\nQPushButton「导入飞书」\nQPushButton「清空数据」] 
-    end
+flowchart TB 
 
-    subgraph Signals[信号连接]
-        direction TB
-        S1[主线程信号 → 子线程槽\nstart_signal(platforms, titles, keywords)\nmanual_login_signal(platform_id)]
-        S2[子线程信号 → 主线程槽\nlog_signal(str) → QTextBrowser\ndata_signal(dict) → QTableWidget\nlogin_required_signal(platform) → 区域4列表\nfinish_signal → 刷新状态/汇总日志]
-    end
+ subgraph GUI[MainWindow · QScrollArea] 
+     direction TB 
 
-    GUI -->|Qt 信号/槽 (跨线程安全通信)| Signals
+     %% 区域1 
+     P1[区域1 平台选择\n- 10平台复选框\n- 全选/全不选] 
 
-    %% 配色
-    style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px
-    style A1 fill:#ffffff,stroke:#333
-    style A2 fill:#ffffff,stroke:#333
-    style A3 fill:#ffffff,stroke:#333
-    style A4 fill:#ffffff,stroke:#333
-    style A5 fill:#ffffff,stroke:#333
-    style A6 fill:#ffffff,stroke:#333
-    style A7 fill:#ffffff,stroke:#333
-    style A8 fill:#ffffff,stroke:#333
-    style Signals fill:#f6ffed,stroke:#52c41a,stroke-width:2px
+     %% 区域2 
+     P2[区域2 标题输入\n- 最多5条\n- 动态关键词槽] 
+
+     %% 区域3 
+     P3[区域3 执行控制\n- 启动 / 暂停 / 停止] 
+
+     %% 区域4 
+     P4[区域4 自动登录失败队列\n- QListWidget\n- 手动登录采集按钮] 
+
+     %% 区域5 
+     P5[区域5 手动登录并采集\n- 平台列表\n- 手动登录按钮] 
+
+     %% 区域6 
+     P6[区域6 实时日志\nQTextBrowser] 
+
+     %% 区域7 
+     P7[区域7 数据结果\nQTableWidget] 
+
+     %% 区域8 
+     P8[区域8 工具\n- 导出CSV\n- 导入飞书\n- 清空数据] 
+ end 
+
+ %% ================= 用户操作流 ================= 
+ P1 --> P3 
+ P2 --> P3 
+
+ P3 -->|点击启动| SIGNAL_START[start_signal] 
+ P4 -->|手动登录采集| SIGNAL_MANUAL[manual_login_signal] 
+ P5 --> SIGNAL_MANUAL 
+
+ %% ================= 数据回流 ================= 
+ THREAD_LOG[log_signal] --> P6 
+ THREAD_DATA[data_signal] --> P7 
+ THREAD_LOGIN[login_required_signal] --> P4 
+
+ %% 颜色样式 
+ style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px 
+ style P1 fill:#e6f7ff,stroke:#1890ff 
+ style P2 fill:#e6f7ff,stroke:#1890ff 
+ style P3 fill:#f0f2ff,stroke:#597ef7 
+ style P4 fill:#fff1eb,stroke:#fa8c16 
+ style P5 fill:#fff1eb,stroke:#fa8c16 
+ style P6 fill:#f6ffed,stroke:#52c41a 
+ style P7 fill:#f6ffed,stroke:#52c41a 
+ style P8 fill:#fff7e6,stroke:#faad14 
+ style SIGNAL_START fill:#ffffff,stroke:#333 
+ style SIGNAL_MANUAL fill:#ffffff,stroke:#333 
+ style THREAD_LOG fill:#ffffff,stroke:#333 
+ style THREAD_DATA fill:#ffffff,stroke:#333 
+ style THREAD_LOGIN fill:#ffffff,stroke:#333 
 ```
 
 ### 3. 项目核心执行流程图
