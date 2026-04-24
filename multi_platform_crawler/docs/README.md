@@ -42,196 +42,105 @@
 ## 🏗️ 系统架构
 
 ### 1. 项目总体架构图
-该图展示从用户交互到底层存储的完整技术分层，标明了各层核心模块及关键通信方式。
 
 ```mermaid
-flowchart TD
-    %% ===================== 表现层 =====================
-    subgraph UI[表现层 · Qt 主线程]
-        direction TB
-        GUI[MainWindow GUI]
-        GUI -->|用户操作| SIGNAL_START[Signal: start_signal]
-        GUI --> SIGNAL_MANUAL[Signal: manual_login_signal]
-        THREAD_LOG[日志展示 QTextBrowser]
-        TABLE[数据表格 QTableWidget]
-    end
-
-    %% 增加纵向距离
-    
-    %% ===================== 线程边界 =====================
-    SIGNAL_START --> THREAD
-    SIGNAL_MANUAL --> THREAD
-
-    %% 增加纵向距离
-    
-    %% ===================== 调度层 =====================
-    subgraph THREAD[采集子线程 · QThread + asyncio]
-        direction TB
-        CrawlThread[CrawlThread]
-        Scheduler[CrawlScheduler 调度中心]
-        CrawlThread --> Scheduler
-        Scheduler -->|FIFO调度| EXECUTE[execute_platform()]
-        Scheduler -->|手动模式| MANUAL_EXEC[execute_manual_crawl()]
-    end
-
-    %% 增加纵向距离
-    
-    %% ===================== 采集器 =====================
-    subgraph COLLECTORS[采集器层 collectors/]
-        direction TB
-        Loader[动态加载 collector]
-        Base[BaseCollector 模板]
-        Login[LoginManager]
-        Nav[NavigationManager]
-        Extract[ArticleListExtractor]
-        Match[TitleMatcher]
-        Base --> Login
-        Base --> Nav
-        Base --> Extract
-        Base --> Match
-    end
-
-    %% 增加纵向距离
-    
-    EXECUTE --> Loader
-    Loader --> Base
-
-    %% 增加纵向距离
-    
-    %% ===================== 工具层 =====================
-    subgraph UTILS[工具层 utils/]
-        direction TB
-        Registry[PlatformRegistry]
-        Model[DataModel 11字段]
-        Exposure[ExposureLoader]
-        Feishu[FeishuExporter]
-        Security[SecureStorage]
-    end
-
-    %% 增加纵向距离
-    
-    Scheduler --> Registry
-    Scheduler --> Model
-    Scheduler --> Exposure
-    Scheduler --> Feishu
-
-    %% 增加纵向距离
-    
-    %% ===================== 存储层 =====================
-    subgraph STORAGE[数据存储层]
-        direction TB
-        YAML[platforms/*.yaml]
-        EXP[config/exposure.yaml]
-        COOKIE[cookies/*.enc]
-        CSV[data/*.csv]
-        LOG[logs/*.log]
-        SNAP[snapshots/]
-    end
-
-    %% 增加纵向距离
-    
-    Login --> COOKIE
-    Scheduler --> CSV
-    Scheduler --> LOG
-    Scheduler --> SNAP
-    Exposure --> EXP
-    Loader --> YAML
-
-    %% 增加纵向距离
-    
-    %% ===================== 回流 GUI =====================
-    Scheduler -->|data_signal| TABLE
-    Scheduler -->|log_signal| THREAD_LOG
-    Scheduler -->|login_required| GUI
-
-    %% 颜色样式
-    style UI fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
-    style THREAD fill:#f0f2ff,stroke:#597ef7,stroke-width:2px
-    style COLLECTORS fill:#fff1eb,stroke:#fa8c16,stroke-width:2px
-    style UTILS fill:#f6ffed,stroke:#52c41a,stroke-width:2px
-    style STORAGE fill:#fff7e6,stroke:#faad14,stroke-width:2px
+flowchart TB 
+     subgraph 接入层 ["<b>接入层 · Qt 主线程</b>"] 
+         GUI("<b>GUI 模块</b><br/>MainWindow<br/>平台选择/标题输入<br/>手动登录/日志/数据表格") 
+     end 
+ 
+     subgraph 应用服务层 ["<b>应用服务层 · 子线程</b>"] 
+         direction TB 
+         CT("<b>采集线程</b><br/>CrawlThread<br/>QThread+asyncio") 
+         CS("<b>调度控制器</b><br/>CrawlScheduler<br/>平台调度/登录控制<br/>数据归一化/快照") 
+     end 
+ 
+     subgraph 核心业务层 ["<b>核心业务层 · 采集器集群</b>"] 
+         PLATS("<b>平台采集器</b><br/>10个平台<br/>遵循统一模板") 
+     end 
+ 
+     subgraph 基础设施层 ["<b>基础设施层 · 工具支撑</b>"] 
+         direction TB 
+         REG("<b>平台注册器</b><br/>PlatformRegistry") 
+         EXP("<b>曝光加载器</b><br/>ExposureLoader") 
+         MAT("<b>标题匹配器</b><br/>TitleMatcher") 
+         DM("<b>数据模型</b><br/>DataModel<br/>11字段") 
+         OPS("<b>运维工具</b><br/>ops<br/>日志轮转/快照清理") 
+         FW("<b>飞书导入服务</b><br/>FeishuImportWorker<br/>导入与导出") 
+     end 
+ 
+     subgraph 数据持久层 ["<b>数据持久层 · 本地文件</b>"] 
+         direction TB 
+         SECRETS[("<b>加密存储</b><br/>.encryption.key<br/>cookies/*.enc")] 
+         CONFIGS[("<b>配置文件</b><br/>platforms/*.yaml<br/>exposure.yaml")] 
+         DATA_CSV[("<b>采集数据</b><br/>data/*.csv")] 
+         LOGS[("<b>运行日志</b><br/>logs/*.log")] 
+         SNAP[("<b>异常快照</b><br/>snapshots/")] 
+     end 
+ 
+     外部依赖{"<b>外部依赖</b><br/>飞书多维表格"}:::external 
+ 
+     GUI --> CT 
+     CT --> CS 
+     CS --> PLATS 
+     CT -.->|日志信号| GUI 
+     CS -.->|登录失败通知| GUI 
+     GUI -->|启动| FW 
+     FW --> DATA_CSV 
+     FW --> 外部依赖 
+     PLATS --> SECRETS & CONFIGS 
+     OPS --> LOGS & SNAP 
+     REG & EXP --> CONFIGS 
+     DM --> DATA_CSV 
+     CS --> REG & DM & MAT & EXP 
+ 
+     classDef external fill:#f9f0ff,stroke:#a0a,stroke-width:3px 
+     style 接入层 fill:#f0f4ff,stroke:#4a6fa5,stroke-width:3px 
+     style 应用服务层 fill:#f0fff4,stroke:#4a9e5c,stroke-width:3px 
+     style 核心业务层 fill:#fff4f0,stroke:#c07a4b,stroke-width:3px 
+     style 基础设施层 fill:#f4f0ff,stroke:#7a4ba0,stroke-width:3px 
+     style 数据持久层 fill:#f4fff0,stroke:#5c9e4a,stroke-width:3px 
+     linkStyle default stroke-width:3px
 ```
 
 ### 2. GUI 架构图
 为你梳理了一份综合性 GUI 架构图，它融合了所有区域、控件以及跨线程的信号连接关系，便于开发与 AI 精确解析。
 
-```mermaid
-flowchart TD
-    %% 信号节点放在主模块上方
-    THREAD_LOG[log_signal]
-    THREAD_DATA[data_signal]
-    THREAD_LOGIN[login_required_signal]
-    
-    subgraph GUI[MainWindow · QScrollArea]
-        direction TB
-
-        %% 区域1
-        P1[区域1 平台选择\n- 10平台复选框\n- 全选/全不选]
-
-        %% 增加纵向距离
-        
-        %% 区域2
-        P2[区域2 标题输入\n- 最多5条\n- 动态关键词槽]
-
-        %% 增加纵向距离
-        
-        %% 区域3
-        P3[区域3 执行控制\n- 启动 / 暂停 / 停止]
-
-        %% 增加纵向距离
-        
-        %% 区域4
-        P4[区域4 自动登录失败队列\n- QListWidget\n- 手动登录采集按钮]
-
-        %% 增加纵向距离
-        
-        %% 区域5
-        P5[区域5 手动登录并采集\n- 平台列表\n- 手动登录按钮]
-
-        %% 增加纵向距离
-        
-        %% 区域6
-        P6[区域6 实时日志\nQTextBrowser]
-
-        %% 增加纵向距离
-        
-        %% 区域7
-        P7[区域7 数据结果\nQTableWidget]
-
-        %% 增加纵向距离
-        
-        %% 区域8
-        P8[区域8 工具\n- 导出CSV\n- 导入飞书\n- 清空数据]
-    end
-
-    %% ================= 用户操作流 =================
-    P1 --> P3
-    P2 --> P3
-
-    P3 -->|点击启动| SIGNAL_START[start_signal]
-    P4 -->|手动登录采集| SIGNAL_MANUAL[manual_login_signal]
-    P5 --> SIGNAL_MANUAL
-
-    %% ================= 数据回流 =================
-    THREAD_LOG --> P6
-    THREAD_DATA --> P7
-    THREAD_LOGIN --> P4
-
-    %% 颜色样式
-    style GUI fill:#fef0f0,stroke:#f5222d,stroke-width:2px
-    style P1 fill:#e6f7ff,stroke:#1890ff
-    style P2 fill:#e6f7ff,stroke:#1890ff
-    style P3 fill:#f0f2ff,stroke:#597ef7
-    style P4 fill:#fff1eb,stroke:#fa8c16
-    style P5 fill:#fff1eb,stroke:#fa8c16
-    style P6 fill:#f6ffed,stroke:#52c41a
-    style P7 fill:#f6ffed,stroke:#52c41a
-    style P8 fill:#fff7e6,stroke:#faad14
-    style SIGNAL_START fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
-    style SIGNAL_MANUAL fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
-    style THREAD_LOG fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
-    style THREAD_DATA fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
-    style THREAD_LOGIN fill:#ffffff,stroke:#333,font-weight:bold,color:#000000
+```text
+┌─────────────────────────────────────────────────────────────────────┐ 
+│                 多平台内容采集系统 v3.3 (GUI 架构)                  │ 
+├─────────────────────────────────────────────────────────────────────┤ 
+│  ┌─ 区域1: 采集平台选择 ────────────────────────────────────┐      │ 
+│  │  - 10 个 QCheckBox (微信公众号，微博，... 雪球)           │      │ 
+│  │  - QPushButton [全选] [全不选]                           │      │ 
+│  │  - 启用条件: 至少选中 1 个平台才能启动采集               │      │ 
+│  ├──────────────────────────────────────────────────────────┤      │ 
+│  ├─ 区域2: 标题/关键词输入 ─────────────────────────────────┤      │ 
+│  │  - 最多 5 个 QLineEdit 标题输入框                         │      │ 
+│  │  - 动态关键词输入框 (微博/头条号标题 > 30字时展示)       │      │ 
+│  ├──────────────────────────────────────────────────────────┤      │ 
+│  ├─ 区域3: 执行控制 ────────────────────────────────────────┤      │ 
+│  │  - QPushButton [启动采集] [暂停] [停止]                  │      │ 
+│  │  - QLabel 显示运行状态                                    │      │ 
+│  ├──────────────────────────────────────────────────────────┤      │ 
+│  ├─ 区域4: 手动登录队列 ────────────────────────────────────┤      │ 
+│  │  - QListWidget 展示自动登录失败的平台                     │      │ 
+│  │  - QPushButton [手动登录采集]                            │      │ 
+│  ├──────────────────────────────────────────────────────────┤      │ 
+│  ├─ 区域5: 手动登录采集模块 ────────────────────────────────┤      │ 
+│  │  - QListWidget (微信/企鹅/雪球置顶)                       │      │ 
+│  │  - QPushButton [手动登录并采集] (有头浏览器模式)         │      │ 
+│  ├──────────────────────────────────────────────────────────┤      │ 
+│  ├─ 区域6: 实时日志 ────────────────────────────────────────┤      │ 
+│  │  - QTextBrowser (接收 CrawlThread log_signal 信号)       │      │ 
+│  ├──────────────────────────────────────────────────────────┤      │ 
+│  ├─ 区域7: 数据结果 ────────────────────────────────────────┤      │ 
+│  │  - QTableWidget (11 个标准字段: 发布日期，阅读，点赞等)  │      │ 
+│  │  - 未匹配标题列表 (Widget)                                │      │ 
+│  ├──────────────────────────────────────────────────────────┤      │ 
+│  └─ 区域8: 工具集 ──────────────────────────────────────────┘      │ 
+│     - QPushButton [导出 CSV] [导入飞书] [清空数据]                │ 
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 3. 项目核心执行流程图
@@ -299,11 +208,41 @@ graph TD
 8. **数据导出**：支持导出CSV或导入飞书
 
 
-### 4. 打包后项目目录架构图
+### 4. 手动登录采集流程图（双路径兼容）
+清晰展示手动登录采集的完整流程，包含自动登录失败和用户直接手动采集两条路径。
+
+```mermaid
+flowchart TB
+    classDef fail fill:#fff1f0,stroke:#f5222d,stroke-width:1px
+    classDef manual fill:#f9f0ff,stroke:#722ed1,stroke-width:1px
+    classDef exec fill:#f0fff4,stroke:#52c41a,stroke-width:1px
+
+    P1[自动采集Cookie失效]:::fail
+    P2[加入手动登录队列<br/>GUI提示]:::manual
+    P3[用户触发手动登录]:::manual
+    P4[暂停自动任务<br/>启动有头浏览器]:::exec
+    P5[扫码/自动填表登录]:::exec
+    P6[执行数据采集]:::exec
+    P7[恢复自动任务]:::exec
+
+    Q1[用户直接手动采集]:::manual
+    Q2[校验标题+启动有头模式]:::exec
+
+    P1-->P2-->P3-->P4-->P5-->P6-->P7
+    Q1-->Q2-->P5
+```
+
+**手动登录流程说明：**
+1. **路径一（自动登录失败）**：当自动采集Cookie失效时，系统会将该平台加入手动登录队列并在GUI界面提示用户
+2. **路径二（用户直接操作）**：用户可以直接选择手动登录采集，跳过自动登录步骤
+3. **执行过程**：无论是哪种路径，都会启动有头浏览器，用户完成登录后执行数据采集
+4. **任务管理**：手动采集过程中会暂停自动任务，采集完成后恢复自动任务的执行
+
+### 5. 打包后项目目录架构图
 
 ![打包后项目目录架构图](./images/packaged_directory.png)
 
-### 4. 打包版使用流程图（用户操作流程）
+### 6. 打包版使用流程图（用户操作流程）
 
 ```mermaid
 flowchart TB 
@@ -337,7 +276,164 @@ flowchart TB
     style Step16 fill:#f6ffed,stroke:#52c41a 
 ```
 
-## 🚀 核心使用步骤
+### 7. 系统总技术架构图（核心分层）
+该图展示从用户交互到底层存储的完整技术分层，标明了各层核心模块及关键通信方式。
+
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                     【表现层 · Qt 主线程 (GUI 事件循环)】                         │
+├────────────────────────────────────────────────────────────────────────────────┤
+│  📁 gui.py : MainWindow (QScrollArea)                                          │
+│  ├─ 平台选择        (10个复选框 + 全选/全不选)                                 │
+│  ├─ 标题/关键词输入  (5个标题槽 + 动态关键词槽)                                 │
+│  ├─ 手动登录/采集   (自动登录失败队列 + 手动登录并采集模块)                     │
+│  ├─ 实时日志         (QTextBrowser, 跨线程 log_signal 追加)                     │
+│  ├─ 数据结果         (QTableWidget, 11标准字段)                                │
+│  └─ 工具模块         (导出CSV, 导入飞书, 清空数据)                             │
+└───────────────────────────┬────────────────────────────────────────────────────┘
+                            │  Qt 信号/槽 (跨线程安全通信)
+                            ▼
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                   【调度与采集层 · 独立子线程 (asyncio 循环)】                    │
+├────────────────────────────────────────────────────────────────────────────────┤
+│  📁 thread.py : CrawlThread (QThread)                                           │
+│  📁 controller.py : CrawlScheduler (调度中心)                                    │
+│  ├─ 核心属性: platform_queue, manual_login_queue, is_paused, is_running        │
+│  ├─ 核心功能:                                                                     │
+│  │   ├─ 平台 FIFO 串行调度                                                       │
+│  │   ├─ 双模式登录控制 (自动登录优先 → 失败则进入手动队列)                      │
+│  │   ├─ 浏览器模式控制 (自动采集无头；手动采集强制有头)                         │
+│  │   ├─ 策略一采集执行 (调用采集器 crawl 接口)                                  │
+│  │   ├─ 数据归一化处理 (11字段映射 + 静态曝光量注入)                            │
+│  │   └─ 异常处理与快照记录                                                        │
+└───────────────────────────┬────────────────────────────────────────────────────┘
+                            │  动态导入 collectors/{platform}.py
+                            ▼
+┌────────────────────────────────────────────────────────────────────────────────┐
+│               【采集器层 · 各平台采集器 (均继承 BaseCollector)】                  │
+├────────────────────────────────────────────────────────────────────────────────┤
+│  📂 collectors/                                                                 │
+│  ├─ template_collector.py (BaseCollector 基类)                                  │
+│  ├─ wechat.py / weibo.py / toutiao.py / ... / xueqiu.py (10个稳定平台)          │
+│  │                                                                              │
+│  └─ 每个采集器内部标准模块:                                                       │
+│      ├─ ConfigLoader       (加载 platforms/{platform}.yaml)                      │
+│      ├─ AntiSpiderHelper   (随机UA、人类输入模拟)                               │
+│      ├─ RetryManager       (可重试异常自动重试)                                 │
+│      ├─ LoginManager       (Cookie管理、自动/手动登录)                          │
+│      ├─ NavigationManager  (导航至文章列表页)                                   │
+│      ├─ TitleMatcher       (三级标题匹配算法)                                   │
+│      └─ ArticleListExtractor (策略一提取、翻页控制)                             │
+└───────────────────────────┬────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                      【工具层 · 线程安全与数据支撑】                               │
+├────────────────────────────────────────────────────────────────────────────────┤
+│  📂 utils/                                                                      │
+│  ├─ platform_registry.py  - 平台注册与查询 (单例)                               │
+│  ├─ data_model.py         - 11字段定义与映射                                    │
+│  ├─ title_matcher.py      - 三级匹配算法 (精确/清理/标准化)                     │
+│  ├─ exposure_loader.py    - 曝光量加载器 (单例)                                 │
+│  ├─ feishu_worker.py      - 飞书导入工作线程 (独立 QThread)                    │
+│  ├─ feishu_exporter.py    - 飞书 API 封装 (批量写入)                             │
+│  └─ ops.py                - 日志轮转、健康检查、快照清理                         │
+└───────────────────────────┬────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                    【数据存储层 · 本地文件系统 (无外部依赖)】                     │
+├────────────────────────────────────────────────────────────────────────────────┤
+│  ├─ platforms/*.yaml     (核心配置：选择器、URL、超时，改版只需修改此处)        │
+│  ├─ config/exposure.yaml (静态曝光量配置，支持实时修改并生效)                   │
+│  ├─ .encryption.key      (Fernet 对称加密密钥，自动生成)                         │
+│  ├─ cookies/*.enc        (AES 加密的 Cookie 文件，保存登录态)                   │
+│  ├─ data/*.csv           (导出的采集数据，UTF-8-BOM 编码)                        │
+│  ├─ logs/*.log           (loguru 日志，按天轮转，保留30天)                       │
+│  └─ snapshots/{plat}_ts/ (异常快照：截图+DOM+堆栈，保留7天)                    │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## � 项目源代码目录结构
+
+### 1. 原代码目录结构（打包前）
+
+```
+multi_platform_crawler/
+├── main.py                 # 程序入口
+├── gui.py                  # PySide6 主界面
+├── controller.py           # 调度中心 CrawlScheduler
+├── thread.py               # 采集子线程 CrawlThread
+├── collectors/             # 各平台采集器（继承 BaseCollector）
+│   ├── __init__.py
+│   ├── template_collector.py
+│   ├── wechat.py
+│   ├── weibo.py
+│   ├── toutiao.py
+│   ├── zhihu.py
+│   ├── baijiahao.py
+│   ├── netease.py
+│   ├── qq.py
+│   ├── yidian.py
+│   ├── zaker.py
+│   └── xueqiu.py
+├── platforms/              # YAML 配置文件（驱动采集逻辑）
+│   ├── wechat.yaml
+│   ├── weibo.yaml
+│   ├── toutiao.yaml
+│   ├── zhihu.yaml
+│   ├── baijiahao.yaml
+│   ├── netease.yaml
+│   ├── qq.yaml
+│   ├── yidian.yaml
+│   ├── zaker.yaml
+│   └── xueqiu.yaml
+├── config/                 # 静态配置
+│   └── exposure.yaml       # 静态曝光量配置
+├── utils/                  # 工具模块
+│   ├── __init__.py
+│   ├── platform_registry.py
+│   ├── data_model.py
+│   ├── title_matcher.py
+│   ├── exposure_loader.py
+│   ├── ops.py
+│   ├── feishu_worker.py
+│   ├── feishu_exporter.py
+│   ├── security.py
+│   └── path_helper.py
+├── docs/                   # 项目文档
+├── cookies/                # 加密存储的登录态（运行时生成）
+├── data/                   # 导出 CSV 数据（运行时生成）
+├── logs/                   # 日志文件（运行时生成）
+├── snapshots/              # 异常快照（运行时生成）
+├── .env.example            # 环境变量配置模板
+├── .gitignore              # Git 忽略文件
+├── build_exe.bat           # 打包脚本
+├── check_before_pack.py    # 打包前检查脚本
+├── requirements.txt        # 依赖文件
+├── test_migration.py       # 迁移测试脚本
+└── 首次配置说明.txt         # 首次使用配置说明
+```
+
+### 2. 打包后目录结构
+
+```
+Crawler_Portable_vX.X.X/      # 交付文件夹
+├── MultiPlatformCrawler.exe  # 主程序（可重命名为「多平台内容采集系统.exe」）
+├── .env                     # 环境变量配置（用户创建）
+├── collectors/              # 外置采集器
+├── platforms/               # 外置 YAML 配置文件
+├── config/                  # 系统配置
+│   └── exposure.yaml        # 曝光量配置
+├── ms-playwright/           # 浏览器内核
+├── cookies/                 # 自动生成，存放加密 Cookie
+├── data/                    # 自动生成，存放导出的 CSV
+├── logs/                    # 自动生成，存放日志
+├── snapshots/               # 自动生成，存放异常快照
+└── 首次配置说明.txt          # 浏览器内核部署步骤
+```
+
+## � 核心使用步骤
 
 1. **解压程序包**，按说明复制浏览器缓存到电脑指定目录
 2. **双击 exe** 启动程序，勾选要采集的平台
@@ -562,84 +658,7 @@ FEISHU_TABLE_ID=xxxxxxxxxxxxxxxx
 
 > 注：更新频率较高的平台：微信公众号、微博号、百家号
 
-## 📁 项目源代码目录结构
 
-### 1. 原代码目录结构（打包前）
-
-```
-multi_platform_crawler/
-├── main.py                 # 程序入口
-├── gui.py                  # PySide6 主界面
-├── controller.py           # 调度中心 CrawlScheduler
-├── thread.py               # 采集子线程 CrawlThread
-├── collectors/             # 各平台采集器（继承 BaseCollector）
-│   ├── __init__.py
-│   ├── template_collector.py
-│   ├── wechat.py
-│   ├── weibo.py
-│   ├── toutiao.py
-│   ├── zhihu.py
-│   ├── baijiahao.py
-│   ├── netease.py
-│   ├── qq.py
-│   ├── yidian.py
-│   ├── zaker.py
-│   └── xueqiu.py
-├── platforms/              # YAML 配置文件（驱动采集逻辑）
-│   ├── wechat.yaml
-│   ├── weibo.yaml
-│   ├── toutiao.yaml
-│   ├── zhihu.yaml
-│   ├── baijiahao.yaml
-│   ├── netease.yaml
-│   ├── qq.yaml
-│   ├── yidian.yaml
-│   ├── zaker.yaml
-│   └── xueqiu.yaml
-├── config/                 # 静态配置
-│   └── exposure.yaml       # 静态曝光量配置
-├── utils/                  # 工具模块
-│   ├── __init__.py
-│   ├── platform_registry.py
-│   ├── data_model.py
-│   ├── title_matcher.py
-│   ├── exposure_loader.py
-│   ├── ops.py
-│   ├── feishu_worker.py
-│   ├── feishu_exporter.py
-│   ├── security.py
-│   └── path_helper.py
-├── docs/                   # 项目文档
-├── cookies/                # 加密存储的登录态（运行时生成）
-├── data/                   # 导出 CSV 数据（运行时生成）
-├── logs/                   # 日志文件（运行时生成）
-├── snapshots/              # 异常快照（运行时生成）
-├── .env.example            # 环境变量配置模板
-├── .gitignore              # Git 忽略文件
-├── build_exe.bat           # 打包脚本
-├── check_before_pack.py    # 打包前检查脚本
-├── requirements.txt        # 依赖文件
-├── test_migration.py       # 迁移测试脚本
-└── 首次配置说明.txt         # 首次使用配置说明
-```
-
-### 2. 打包后目录结构
-
-```
-Crawler_Portable_vX.X.X/      # 交付文件夹
-├── MultiPlatformCrawler.exe  # 主程序（可重命名为「多平台内容采集系统.exe」）
-├── .env                     # 环境变量配置（用户创建）
-├── collectors/              # 外置采集器
-├── platforms/               # 外置 YAML 配置文件
-├── config/                  # 系统配置
-│   └── exposure.yaml        # 曝光量配置
-├── ms-playwright/           # 浏览器内核
-├── cookies/                 # 自动生成，存放加密 Cookie
-├── data/                    # 自动生成，存放导出的 CSV
-├── logs/                    # 自动生成，存放日志
-├── snapshots/               # 自动生成，存放异常快照
-└── 首次配置说明.txt          # 浏览器内核部署步骤
-```
 
 ## 📦 模块架构与功能详解
 
@@ -672,16 +691,17 @@ Crawler_Portable_vX.X.X/      # 交付文件夹
 
 #### 1.3 工具模块 (utils/)
 - **文件**：`utils/*.py`
-- **功能**：提供通用工具和服务
+- **功能**：提供通用工具和服务，为整个系统提供技术支撑
 - **核心模块**：
-  - `platform_registry.py`: 平台注册与管理（单例）
-  - `data_model.py`: 标准字段定义和映射
-  - `title_matcher.py`: 三级标题匹配算法
-  - `exposure_loader.py`: 静态曝光量加载（单例）
-  - `feishu_worker.py`: 飞书导入独立线程
-  - `feishu_exporter.py`: 飞书 API 封装
-  - `security.py`: 敏感数据加密存储
-  - `ops.py`: 日志轮转、健康检查、快照清理
+  - `platform_registry.py`: 平台注册与管理（单例），负责管理所有采集平台的注册、查询和状态管理
+  - `data_model.py`: 标准字段定义和映射，定义了11个标准数据字段，并提供字段映射和归一化功能
+  - `title_matcher.py`: 三级标题匹配算法，实现了精确匹配、清理匹配和标准化匹配三种匹配策略
+  - `exposure_loader.py`: 静态曝光量加载（单例），从配置文件加载各平台的静态曝光量值
+  - `feishu_worker.py`: 飞书导入独立线程，在后台异步执行飞书导入操作，避免阻塞主线程
+  - `feishu_exporter.py`: 飞书 API 封装，提供飞书多维表格的批量写入和数据处理功能
+  - `security.py`: 敏感数据加密存储，使用 Fernet 对称加密算法加密存储 Cookie 和其他敏感信息
+  - `ops.py`: 日志轮转、健康检查、快照清理，负责系统运维相关的功能，如日志管理和异常快照处理
+  - `path_helper.py`: 路径管理工具，提供项目路径的统一管理和路径生成功能
 
 #### 1.4 GUI 模块 (gui.py)
 - **文件**：`gui.py`
@@ -770,6 +790,167 @@ Crawler_Portable_vX.X.X/      # 交付文件夹
 ## ⚠️ 免责声明
 
 **免责声明**：本项目仅供学习、技术研究使用，请勿用于商业用途或非法采集他人数据。使用者应遵守各平台用户协议及相关法律法规，一切违法违规后果由使用者自行承担。
+
+## 📦 打包策略与技术实现
+
+### 打包流程图
+
+```mermaid
+flowchart TB
+    subgraph 接入层[接入层]
+        Dev[开发环境<br/>源代码仓库]
+        Build[构建环境<br/>虚拟环境]
+    end
+
+    subgraph 应用服务层[应用服务层]
+        Check[打包前检查<br/>check_before_pack.py]
+        Pack[打包执行<br/>build_exe.bat]
+        Verify[产物验证<br/>功能测试]
+    end
+
+    subgraph 核心业务层[核心业务层]
+        Core[核心模块打包<br/>main.py/gui.py/controller.py]
+        Utils[工具模块打包<br/>utils/]
+        External[外置模块分离<br/>collectors/platforms/config]
+    end
+
+    subgraph 数据持久层[数据持久层]
+        Config[配置文件<br/>.env/exposure.yaml]
+        Cookie[登录态存储<br/>cookies/]
+        Data[数据导出<br/>data/]
+        Log[日志记录<br/>logs/]
+    end
+
+    subgraph 基础设施层[基础设施层]
+        Runtime[运行时环境<br/>Windows系统]
+        Browser[浏览器内核<br/>ms-playwright]
+    end
+
+    subgraph 外部依赖层[外部依赖层]
+        PyInstaller[PyInstaller<br/>打包工具]
+        Playwright[Playwright<br/>浏览器自动化]
+        PySide6[PySide6<br/>GUI框架]
+    end
+
+    Dev --> Build
+    Build --> Check
+    Check --> Pack
+    Pack --> Core
+    Pack --> Utils
+    Pack --> External
+    Core --> Verify
+    Utils --> Verify
+    External --> Verify
+    Verify --> Runtime
+    Runtime --> Browser
+    Runtime --> Config
+    Runtime --> Cookie
+    Runtime --> Data
+    Runtime --> Log
+
+    Pack -.-> PyInstaller
+    Core -.-> Playwright
+    Core -.-> PySide6
+
+    style Dev fill:#e6f7ff,stroke:#1890ff
+    style Build fill:#e6f7ff,stroke:#1890ff
+    style Check fill:#f0f2ff,stroke:#597ef7
+    style Pack fill:#f0f2ff,stroke:#597ef7
+    style Verify fill:#f0f2ff,stroke:#597ef7
+    style Core fill:#fff1eb,stroke:#fa8c16
+    style Utils fill:#fff1eb,stroke:#fa8c16
+    style External fill:#fff1eb,stroke:#fa8c16
+    style Config fill:#f6ffed,stroke:#52c41a
+    style Cookie fill:#f6ffed,stroke:#52c41a
+    style Data fill:#f6ffed,stroke:#52c41a
+    style Log fill:#f6ffed,stroke:#52c41a
+    style Runtime fill:#fff7e6,stroke:#faad14
+    style Browser fill:#fff7e6,stroke:#faad14
+    style PyInstaller fill:#fef0f0,stroke:#f5222d
+    style Playwright fill:#fef0f0,stroke:#f5222d
+    style PySide6 fill:#fef0f0,stroke:#f5222d
+```
+
+### 1. 打包的意义
+
+#### 业务场景意义
+- **降低使用门槛**：非技术人员无需安装 Python 环境和依赖，双击即可运行
+- **简化部署流程**：避免了复杂的环境配置和依赖安装步骤
+- **提高稳定性**：打包后环境隔离，减少外部因素干扰
+- **便于分发**：可作为独立交付物分发给不同用户使用
+
+#### 技术解决思路
+- **路径动态化**：使用动态路径处理，避免硬编码路径问题
+- **模块分离**：将核心代码与易变配置分离，提高维护效率
+- **运行时自适应**：自动检测运行环境，适配开发和打包两种模式
+
+### 2. 打包策略
+
+#### 核心原则
+- **完整保留原始目录结构**：不拆分、不移动、不重命名任何文件夹
+- **动态根目录**：全局使用 `PROJECT_ROOT` 动态确定根目录
+- **硬编码禁止**：代码中不得出现任何绝对路径
+- **固定代码全打包**：核心模块打包进 exe，避免频繁修改
+- **易变模块外置**：采集器代码、平台配置、账号密码配置外置
+
+#### 具体实现
+- **动态路径处理**：在 `utils/path_helper.py` 中实现 `get_project_root()` 函数，根据运行环境动态确定根目录
+- **模块分离策略**：
+  - 打包进 exe：`main.py`, `gui.py`, `controller.py`, `thread.py`, `utils/` 等核心模块
+  - 外置文件：`collectors/`（采集器代码）、`platforms/`（YAML 配置）、`.env`（账号密码配置）、`config/exposure.yaml`（曝光量配置）
+- **运行时目录自动创建**：程序启动时自动创建 `cookies/`, `data/`, `logs/`, `snapshots/` 等运行时目录
+
+### 3. 打包效果与优点
+
+#### 运行效果
+- **整文件夹迁移**：可复制整个交付文件夹到任意位置（桌面、D盘、U盘等），双击 exe 即可运行
+- **零配置启动**：无需额外配置，程序自动读取外置文件和创建必要目录
+- **跨环境兼容**：在不同 Windows 系统上表现一致，不受环境变量影响
+- **登录态保留**：Cookie 存储在 `cookies/` 目录，随文件夹一起迁移，无需重新登录
+
+#### 技术优点
+- **平台改版快速响应**：仅需修改外置的 YAML 配置文件，无需重新打包
+- **运维成本降低**：非技术人员可通过修改外置文件应对平台改版
+- **故障排查便捷**：日志按天分割，异常自动保存快照（截图+DOM+堆栈）
+- **安全性提升**：账号密码等敏感信息存储在外置 `.env` 文件，不随 exe 打包
+
+### 4. 关键技术实现
+
+#### 动态路径处理
+```python
+# utils/path_helper.py
+def get_project_root() -> Path:
+    """返回项目根目录（开发环境返回当前工作目录，打包环境返回exe所在目录）"""
+    if getattr(sys, 'frozen', False):
+        # 打包后运行：sys.executable 是 exe 的完整路径
+        return Path(sys.executable).parent
+    else:
+        # 开发环境：返回当前工作目录（通常是项目根目录）
+        return Path.cwd()
+
+# 全局常量，供其他模块导入
+PROJECT_ROOT = get_project_root()
+```
+
+#### 外置模块动态导入
+```python
+# utils/module_loader.py
+def load_collector(platform_name: str):
+    """从外置 collectors 目录动态加载采集器类"""
+    collector_path = PROJECT_ROOT / "collectors" / f"{platform_name}.py"
+    if not collector_path.exists():
+        raise FileNotFoundError(f"Collector not found: {collector_path}")
+    
+    spec = importlib.util.spec_from_file_location(platform_name, collector_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[platform_name] = module
+    spec.loader.exec_module(module)
+    
+    # 约定采集器类名为 {PlatformName}Collector，首字母大写驼峰
+    class_name = ''.join(part.capitalize() for part in platform_name.split('_')) + "Collector"
+    collector_class = getattr(module, class_name)
+    return collector_class()
+```
 
 ## 📦 打包与部署
 
