@@ -44,63 +44,68 @@
 ### 1. 项目总体架构图
 
 ```mermaid
-flowchart TB 
-     subgraph 接入层 ["<b>接入层 · Qt 主线程</b>"] 
-         GUI("<b>GUI 模块</b><br/>MainWindow<br/>平台选择/标题输入<br/>手动登录/日志/数据表格") 
-     end 
- 
-     subgraph 应用服务层 ["<b>应用服务层 · 子线程</b>"] 
-         direction TB 
-         CT("<b>采集线程</b><br/>CrawlThread<br/>QThread+asyncio") 
-         CS("<b>调度控制器</b><br/>CrawlScheduler<br/>平台调度/登录控制<br/>数据归一化/快照") 
-     end 
- 
-     subgraph 核心业务层 ["<b>核心业务层 · 采集器集群</b>"] 
-         PLATS("<b>平台采集器</b><br/>10个平台<br/>遵循统一模板") 
-     end 
- 
-     subgraph 基础设施层 ["<b>基础设施层 · 工具支撑</b>"] 
-         direction TB 
-         REG("<b>平台注册器</b><br/>PlatformRegistry") 
-         EXP("<b>曝光加载器</b><br/>ExposureLoader") 
-         MAT("<b>标题匹配器</b><br/>TitleMatcher") 
-         DM("<b>数据模型</b><br/>DataModel<br/>11字段") 
-         OPS("<b>运维工具</b><br/>ops<br/>日志轮转/快照清理") 
-         FW("<b>飞书导入服务</b><br/>FeishuImportWorker<br/>导入与导出") 
-     end 
- 
-     subgraph 数据持久层 ["<b>数据持久层 · 本地文件</b>"] 
-         direction TB 
-         SECRETS[("<b>加密存储</b><br/>.encryption.key<br/>cookies/*.enc")] 
-         CONFIGS[("<b>配置文件</b><br/>platforms/*.yaml<br/>exposure.yaml")] 
-         DATA_CSV[("<b>采集数据</b><br/>data/*.csv")] 
-         LOGS[("<b>运行日志</b><br/>logs/*.log")] 
-         SNAP[("<b>异常快照</b><br/>snapshots/")] 
-     end 
- 
-     外部依赖{"<b>外部依赖</b><br/>飞书多维表格"}:::external 
- 
-     GUI --> CT 
-     CT --> CS 
-     CS --> PLATS 
-     CT -.->|日志信号| GUI 
-     CS -.->|登录失败通知| GUI 
-     GUI -->|启动| FW 
-     FW --> DATA_CSV 
-     FW --> 外部依赖 
-     PLATS --> SECRETS & CONFIGS 
-     OPS --> LOGS & SNAP 
-     REG & EXP --> CONFIGS 
-     DM --> DATA_CSV 
-     CS --> REG & DM & MAT & EXP 
- 
-     classDef external fill:#f9f0ff,stroke:#a0a,stroke-width:3px 
-     style 接入层 fill:#f0f4ff,stroke:#4a6fa5,stroke-width:3px 
-     style 应用服务层 fill:#f0fff4,stroke:#4a9e5c,stroke-width:3px 
-     style 核心业务层 fill:#fff4f0,stroke:#c07a4b,stroke-width:3px 
-     style 基础设施层 fill:#f4f0ff,stroke:#7a4ba0,stroke-width:3px 
-     style 数据持久层 fill:#f4fff0,stroke:#5c9e4a,stroke-width:3px 
-     linkStyle default stroke-width:3px
+flowchart TB
+    subgraph UI["接入层 · Qt 主线程"]
+        GUI["GUI 模块<br/>MainWindow<br/>平台选择/标题输入<br/>手动登录/日志/数据表格"]
+    end
+
+    subgraph THREAD["应用服务层 · 子线程"]
+        direction TB
+        CT["采集线程<br/>CrawlThread<br/>QThread+asyncio"]
+        CS["调度控制器<br/>CrawlScheduler<br/>平台调度/登录控制<br/>数据归一化/快照"]
+    end
+
+    subgraph COLLECTORS["核心业务层 · 采集器集群"]
+        PLATS["平台采集器<br/>10个平台<br/>遵循统一模板"]
+    end
+
+    subgraph UTILS["基础设施层 · 工具支撑"]
+        direction TB
+        REG["平台注册器<br/>PlatformRegistry"]
+        EXP["曝光加载器<br/>ExposureLoader"]
+        MAT["标题匹配器<br/>TitleMatcher"]
+        DM["数据模型<br/>DataModel<br/>11字段"]
+        OPS["运维工具<br/>ops<br/>日志轮转/快照清理"]
+        FW["飞书导入服务<br/>FeishuImportWorker<br/>导入与导出"]
+    end
+
+    subgraph STORAGE["数据持久层 · 本地文件"]
+        direction TB
+        SECRETS["加密存储<br/>.encryption.key<br/>cookies/*.enc"]
+        CONFIGS["配置文件<br/>platforms/*.yaml<br/>exposure.yaml"]
+        DATA_CSV["采集数据<br/>data/*.csv"]
+        LOGS["运行日志<br/>logs/*.log"]
+        SNAP["异常快照<br/>snapshots/"]
+    end
+
+    EXTERNAL{"外部依赖<br/>飞书多维表格"}
+
+    GUI --> CT
+    CT --> CS
+    CS --> PLATS
+    CT -.->|"日志信号"| GUI
+    CS -.->|"登录失败通知"| GUI
+    GUI -->|"启动"| FW
+    FW --> DATA_CSV
+    FW --> EXTERNAL
+    PLATS --> SECRETS
+    PLATS --> CONFIGS
+    OPS --> LOGS
+    OPS --> SNAP
+    REG --> CONFIGS
+    EXP --> CONFIGS
+    DM --> DATA_CSV
+    CS --> REG
+    CS --> DM
+    CS --> MAT
+    CS --> EXP
+
+    classDef external fill:#f9f0ff,stroke:#a0a,stroke-width:2px
+    style UI fill:#f0f4ff,stroke:#4a6fa5,stroke-width:2px
+    style THREAD fill:#f0fff4,stroke:#4a9e5c,stroke-width:2px
+    style COLLECTORS fill:#fff4f0,stroke:#c07a4b,stroke-width:2px
+    style UTILS fill:#f4f0ff,stroke:#7a4ba0,stroke-width:2px
+    style STORAGE fill:#f4fff0,stroke:#5c9e4a,stroke-width:2px
 ```
 
 ### 2. GUI 架构图
