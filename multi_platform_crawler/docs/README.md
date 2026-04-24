@@ -957,14 +957,13 @@ def load_collector(platform_name: str):
     return collector_class()
 ```
 
-## � 使用方式
+## 📖 使用方式
 
 ### 1. 下载与安装
 - **打包版本**：
-  - 在 GitHub 仓库页面点击 "Releases" 下载最新版本
-  - 下载 `MultiPlatformCrawler.exe` 可执行文件
-  - 下载完整的交付文件夹（包含 `collectors/`、`platforms/`、`config/` 等外置目录）
-  - 无需安装 Python 环境，双击即可运行
+  - 在 GitHub 仓库页面点击 "Releases" 下载最新版本的完整压缩包
+  - 压缩包包含完整的 `crawler_system/` 目录结构
+  - 无需安装 Python 环境，解压后双击 `MultiPlatformCrawler.exe` 即可运行
 
 - **浏览器内核**：
   - 在 GitHub 仓库 "Releases" 页面下载 `ms-playwright` 浏览器压缩包
@@ -974,7 +973,7 @@ def load_collector(platform_name: str):
 ### 2. 目录结构（打包版本）
 ```
 crawler_system/                     # 根文件夹（可重命名，可任意放置）
-├─ .env                          # 账号密码配置文件
+├─ .env.example                          # 账号密码配置文件【配置时候需要修改为：.env文件】
 ├─ MultiPlatformCrawler.exe       # 主程序
 ├─ collectors/                    # 采集器代码
 ├─ platforms/                     # 平台配置文件
@@ -987,10 +986,11 @@ crawler_system/                     # 根文件夹（可重命名，可任意放
 ```
 
 ### 3. 首次配置
-1. 复制 `crawler_system/` 文件夹到任意位置
-2. 打开 `crawler_system/` 文件夹，根据 `.env.example` 创建 `.env` 文件
-3. 填写 `.env` 文件中的账号密码等配置
-4. 双击 `MultiPlatformCrawler.exe` 启动程序
+1. 下载并解压完整的 `crawler_system.zip` 压缩包
+2. 复制 `crawler_system/` 文件夹到任意位置
+3. 打开 `crawler_system/` 文件夹，将 `.env.example` 复制并重命名为 `.env` 文件
+4. 填写 `.env` 文件中的账号密码等配置
+5. 双击 `MultiPlatformCrawler.exe` 启动程序
 
 ### 4. 运行流程
 1. **平台选择**：在左侧勾选需要采集的平台（至少选择 1 个）
