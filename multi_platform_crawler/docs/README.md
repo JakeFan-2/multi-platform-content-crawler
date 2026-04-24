@@ -957,7 +957,54 @@ def load_collector(platform_name: str):
     return collector_class()
 ```
 
-## 📦 打包与部署
+## � 使用方式
+
+### 1. 下载与安装
+- **打包版本**：
+  - 在 GitHub 仓库页面点击 "Releases" 下载最新版本
+  - 下载 `MultiPlatformCrawler.exe` 可执行文件
+  - 下载完整的交付文件夹（包含 `collectors/`、`platforms/`、`config/` 等外置目录）
+  - 无需安装 Python 环境，双击即可运行
+
+- **浏览器内核**：
+  - 在 GitHub 仓库 "Releases" 页面下载 `ms-playwright` 浏览器压缩包
+  - 若目标机器没有 Python 环境，需下载并解压 `ms-playwright` 浏览器压缩包
+  - 将解压后的 `ms-playwright` 文件夹复制到 `%LOCALAPPDATA%\ms-playwright\` 目录
+
+### 2. 目录结构（打包版本）
+```
+crawler_system/                     # 根文件夹（可重命名，可任意放置）
+├─ .env                          # 账号密码配置文件
+├─ MultiPlatformCrawler.exe       # 主程序
+├─ collectors/                    # 采集器代码
+├─ platforms/                     # 平台配置文件
+├─ config/                        # 运维配置
+│   └─ exposure.yaml              # 曝光量配置
+├─ cookies/                       # 运行时生成（登录态）
+├─ data/                          # 运行时生成（CSV导出）
+├─ logs/                          # 运行时生成（日志）
+└─ snapshots/                     # 运行时生成（异常快照）
+```
+
+### 3. 首次配置
+1. 复制 `crawler_system/` 文件夹到任意位置
+2. 打开 `crawler_system/` 文件夹，根据 `.env.example` 创建 `.env` 文件
+3. 填写 `.env` 文件中的账号密码等配置
+4. 双击 `MultiPlatformCrawler.exe` 启动程序
+
+### 4. 运行流程
+1. **平台选择**：在左侧勾选需要采集的平台（至少选择 1 个）
+2. **标题输入**：在标题输入区域填写需要采集的文章标题（最多 5 条）
+3. **开始采集**：点击 "启动采集" 按钮
+4. **查看结果**：采集完成后，结果会显示在数据表格中
+5. **数据导出**：可选择 "导出 CSV" 或 "导入飞书"
+
+### 5. 常见问题
+- **启动失败**：检查 `ms-playwright` 浏览器内核是否正确配置
+- **登录失败**：检查账号密码是否正确，或使用手动登录模式
+- **采集无数据**：检查平台选择器配置是否需要更新（修改 `platforms/*.yaml`）
+
+## �📦 打包与部署
 
 ### 打包步骤
 1. **准备环境**：确保已安装 Python 3.11 和所有依赖（`pip install -r requirements.txt`）
@@ -981,11 +1028,6 @@ def load_collector(platform_name: str):
   - 修改核心模块代码（如 `main.py`、`gui.py`、`controller.py` 等）
   - 添加新的依赖包
   - 修改打包脚本或配置
-
-### 部署说明
-1. **浏览器内核**：将 `ms-playwright` 文件夹复制到 `%LOCALAPPDATA%\ms-playwright\`
-2. **配置文件**：创建 `.env` 文件并填写必要的配置
-3. **启动程序**：双击 `MultiPlatformCrawler.exe` 运行
 
 ## �� 许可证
 
