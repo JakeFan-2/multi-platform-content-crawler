@@ -962,13 +962,8 @@ def load_collector(platform_name: str):
 ### 1. 下载与安装
 - **打包版本**：
   - 在 GitHub 仓库页面点击 "Releases" 下载最新版本的完整压缩包
-  - 压缩包包含完整的 `crawler_system/` 目录结构
+  - 压缩包已包含浏览器内核，无需单独下载
   - 无需安装 Python 环境，解压后双击 `MultiPlatformCrawler.exe` 即可运行
-
-- **浏览器内核**：
-  - 在 GitHub 仓库 "Releases" 页面下载 `ms-playwright` 浏览器压缩包
-  - 若目标机器没有 Python 环境，需下载并解压 `ms-playwright` 浏览器压缩包
-  - 将解压后的 `ms-playwright` 文件夹复制到 `%LOCALAPPDATA%\ms-playwright\` 目录
 
 ### 2. 目录结构（打包版本）
 ```
@@ -979,6 +974,10 @@ crawler_system/                     # 根文件夹（可重命名，可任意放
 ├─ platforms/                     # 平台配置文件
 ├─ config/                        # 运维配置
 │   └─ exposure.yaml              # 曝光量配置
+├─ docs/                          # 文档
+├─ ms-playwright.zip              # 浏览器内核（已包含）
+├─ requirements.txt               # 依赖文件
+├─ 首次配置说明.txt               # 配置指导
 ├─ cookies/                       # 运行时生成（登录态）
 ├─ data/                          # 运行时生成（CSV导出）
 ├─ logs/                          # 运行时生成（日志）
@@ -990,7 +989,8 @@ crawler_system/                     # 根文件夹（可重命名，可任意放
 2. 复制 `crawler_system/` 文件夹到任意位置
 3. 打开 `crawler_system/` 文件夹，将 `.env.example` 复制并重命名为 `.env` 文件
 4. 填写 `.env` 文件中的账号密码等配置
-5. 双击 `MultiPlatformCrawler.exe` 启动程序
+5. 若目标机器没有 Python 环境，解压 `ms-playwright.zip` 到 `%LOCALAPPDATA%\ms-playwright\` 目录
+6. 双击 `MultiPlatformCrawler.exe` 启动程序
 
 ### 4. 运行流程
 1. **平台选择**：在左侧勾选需要采集的平台（至少选择 1 个）
